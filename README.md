@@ -1,5 +1,5 @@
 # 西二在线第四轮作业
-本项目为外卖平台系统，前端的借鉴了https://blog.csdn.net/qiguanjiezl/article/details/10529055 的内容
+本项目为外卖平台系统，前端的借鉴了https://blog.csdn.net/qiguanjiezl/article/details/105141834 等的内容
 ## 实现框架
 本项目前端采用HTML/CSS/JS/Bootstrap进行开发，数据库采用MySQL,服务器端采用Python进行开发，采用Flask框架。
 ## 项目功能
