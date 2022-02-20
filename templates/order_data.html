@@ -7,6 +7,7 @@
 {% block css %}
 <link rel="stylesheet" href="/static/css/register.css">
 <link rel="stylesheet" href="/static/css/shop.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -105,7 +106,7 @@
     <input type="hidden" name="result2" id="result2" value="" >
     <div class="issue_list_div">
         <ul class="issue_list_ul">
-            {% for issue in ans %}
+            {% for issue in index_list %}
                 <li class="issue_list_li">
                     {% if type==1 and issue[5]=='False' %}
                     <div style = "float:right;" id="divdiv">
@@ -193,6 +194,11 @@
             <br/>
             {% endfor %}
         </ul>
+        <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+        </nav>
     </div>
     </form>
 </div>

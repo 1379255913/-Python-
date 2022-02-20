@@ -11,6 +11,7 @@ import os
 import re
 from decorators import login_limit
 from uploader import Uploader
+from page_utils import Pagination
 
 
 app = Flask(__name__)
@@ -411,7 +412,13 @@ def orderdata(Ino):
                 ans.append(tuple(p))
             cur.close()
             ans.reverse()
-            return render_template('order_data.html',ans=tuple(ans))
+            pager_obj = Pagination(request.args.get("page", 1), len(ans), request.path, request.args, per_page_count=10,
+                                   max_pager_count=11)
+            print(request.path)
+            print(request.args)
+            index_list = ans[pager_obj.start:pager_obj.end]
+            html = pager_obj.page_html()
+            return render_template('order_data.html', index_list=index_list, html=html)
         except Exception as e:
             raise e
     else: return redirect(url_for(('index')))
