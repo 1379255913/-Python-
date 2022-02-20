@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}
+商家列表
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/shop.css">
+{% endblock %}
+
+{% block content %}
+<div class="formula_content">
+    <div class="page-header" id="page_header">
+        <h1>商家列表</h1>
+    </div>
+    <div class="issue_list_div">
+        <ul class="issue_list_ul">
+            {% for issue in issue_information %}
+                <li class="issue_list_li">
+                    <img src="{{ issue[3] }}" width="200" height="200" style="float:left" >
+                    <div class="issue_div">
+                        <div class="issue_content">
+                            <h1>
+                                {% if type != 0 and email %}
+                                <a href="{{ url_for('shop_detail',Ino = issue[4]) }}">
+                                    {{ issue[0] }}
+                                </a>
+                                {% elif email %}
+                                <a href="{{ url_for('order',Ino = issue[4]) }}">
+                                    {{ issue[0] }}
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('shop_detail',Ino = issue[4]) }}">
+                                    {{ issue[0] }}
+                                </a>
+                                {% endif %}
+                            <a style="float:right;" href="{{ url_for('show_issue',Ino = issue[4]) }}">
+                                    查看商家评论
+                            </a>
+                            </h1>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[2] }}
+                            </page>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[1] }}
+                            </page>
+                            <br/>
+                        </div>
+                    </div>
+                </li>
+                <br/>
+                <br/>
+            <br/>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+{% block formula_class %}
+active
+{% endblock %}

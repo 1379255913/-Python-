@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ issue_title }}
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="/static/css/issue_detail.css">
+    <!-- 引入配置文件 -->
+    <script src="/static/ueditor/ueditor.config.js"}></script>
+    <!-- 引入编辑器源码文件 -->
+    <script src="/static/ueditor/ueditor.all.min.js"}></script>
+{% endblock %}
+
+{% block content %}
+<div class="formula_content">
+    <div class="page-header" id="page_header">
+        <h1>{{ issue_title }}</h1>
+    </div>
+    <div class="issue_list_div">
+        <ul class="issue_list_ul">
+            {% for comm in comment %}
+                <li class="issue_list_li">
+                    <div class="issue_div">
+                        <div class="issue_content">
+                            <article>
+                                {{ comm[1]|safe }}
+                            </article>
+                        </div>
+                        <div class="author_info">
+{#                            <p class="cno_info">{{ comm[3] }}</p>#}
+                            <p class="info">
+                                <span class="cno_info">{{ comm[3] }}楼</span>&emsp;
+                                <span>
+                                    <span>作者：{{ comm[0] }}</span>&emsp;&emsp;
+                                    <span>发布时间：{{ comm[2] }}</span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+                <li>
+                    <div>
+                        <form class="post_issue_form" method="post">
+                            <input type="hidden" name="Ino" value="{{ Ino }}">
+                            <div class="ueditor_div">
+                                <script id="editor" type="text/plain">
+                                请输入回复的内容!
+                                </script>
+                            </div>
+                            <div id="post_issue_butt">
+                              <button type="submit" class="btn btn-default">回复</button>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+        </ul>
+    </div>
+<!-- 实例化编辑器 -->
+<script type="text/javascript">
+    var editor = UE.getEditor('editor');
+</script>
+</div>
+{% endblock %}

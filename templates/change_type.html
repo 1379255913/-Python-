@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}
+编辑菜品类型
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/change_password.css">
+{% endblock %}
+
+{% block content %}
+<div class="change_password_content">
+    <div class="page-header" id="page_header">
+      <h1>编辑菜品类型<small>Change Type</small></h1>
+    </div>
+    <div class="change_password_div">
+        <form method="post" enctype="multipart/form-data">
+            <span style=" font-size:20px;color: red" >
+                {% for item in get_flashed_messages() %}
+                {{ item }}
+                {% endfor %}
+            </span>
+            <div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型0
+                </label>
+                <input type="text" class="form-control" name="type0" id="exampleInputPassword1" value="{{ change_type[0] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型1
+                </label>
+                <input type="text" class="form-control" name="type1" id="exampleInputPassword1" value="{{ change_type[1] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型2
+                </label>
+                <input type="text" class="form-control" name="type2" id="exampleInputPassword1" value="{{ change_type[2] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型3
+                </label>
+                <input type="text" class="form-control" name="type3" id="exampleInputPassword1" value="{{ change_type[3] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型4
+                </label>
+                <input type="text" class="form-control" name="type4" id="exampleInputPassword1" value="{{ change_type[4] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型5
+                </label>
+                <input type="text" class="form-control" name="type5" id="exampleInputPassword1" value="{{ change_type[5] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型6
+                </label>
+                <input type="text" class="form-control" name="type6" id="exampleInputPassword1" value="{{ change_type[6] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型7
+                </label>
+                <input type="text" class="form-control" name="type7" id="exampleInputPassword1" value="{{ change_type[7] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型8
+                </label>
+                <input type="text" class="form-control" name="type8" id="exampleInputPassword1" value="{{ change_type[8] }}">
+            </div><div class="form-group">
+                <label for="exampleInputPassword1">
+                        类型9
+                </label>
+                <input type="text" class="form-control" name="type9" id="exampleInputPassword1" value="{{ change_type[9] }}">
+            </div>
+            <br/>
+            <div id="info_butt">
+              <button type="submit" class="btn btn-default">修改菜品类型</button>
+          </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

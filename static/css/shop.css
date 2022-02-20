@@ -1,0 +1,37 @@
+.formula_content{
+    margin: 5% 20%;
+}
+
+#page_header{
+    text-align: center;
+}
+
+.issue_list_ul{
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+.author_info{
+    text-align: right;
+}
+
+.issue_div{
+    border-bottom:1px solid #eee;
+}
+
+.issue_content{
+    max-height: 200px;
+}
+
+h1{
+    font-size: 100px;
+}
+
+.page1{
+    font-size: 20px;
+}
+
+.page2{
+    font-size: 15px;
+    style="float:right"
+}

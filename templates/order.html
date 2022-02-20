@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}
+点菜
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/register.css">
+<link rel="stylesheet" href="/static/css/shop.css">
+{% endblock %}
+
+{% block content %}
+<div class="formula_content">
+    <div class="page-header" id="page_header">
+        <h1>点菜</h1>
+    </div>
+    <script type="text/javascript">
+        var ans1=0;
+        var i = 0;
+        function addInput(t,d) {
+            //使用DOM的创建元素方法
+            var o = document.createElement("input");
+            o.type = "button";
+            o.value = "-";
+            o.id = "button" + i + "-";
+            o.name=i;
+            o.width="20";
+            o.height="20";
+            o.addEventListener("click", function () {
+                sub_number(this);
+            });
+            var l = document.createElement("p");
+            l.id="number"+i;
+            var j = document.createElement("input");
+            j.type = "button";
+            j.value = "+";
+            j.id = "button" + i + "+";
+            j.name=i;
+            j.width="20";
+            j.height="20";
+            j.addEventListener("click", function () {
+                add_number(this);
+            });
+            var price_num=document.createElement("input");
+            price_num.type="hidden";
+            price_num.id="price"+i;
+            price_num.value=parseFloat(t);
+            var title=document.createElement("input");
+            title.type="hidden";
+            title.id="title"+i;
+            title.value=d;
+            var k = document.getElementById("divdiv");
+            k.id = "div"+i;
+            k.appendChild(o);
+            k.appendChild(l);
+            k.appendChild(j);
+            k.appendChild(price_num);
+            k.appendChild(title);
+            o = null;//及时解除不再使用的变量引用,即将其赋值为 null;
+            j = null;
+            l = null;
+            i++;
+        }
+        function add_number(obj) {
+            var r=document.getElementById("number"+obj.name).innerHTML;
+            var q=document.getElementById("ans1").innerHTML;
+            if (r==""){
+            r=1;
+            }
+            else{
+            r=parseInt(r)+1;
+            }
+            document.getElementById("number"+obj.name).innerHTML=r;
+            document.getElementById("ans1").innerHTML=parseFloat(q)+parseFloat(document.getElementById("price"+obj.name).value);;
+            r=null;
+            q=null;
+        }
+        function sub_number(obj) {
+            var r=document.getElementById("number"+obj.name).innerHTML;
+            var q=document.getElementById("ans1").innerHTML;
+            if (r=="1"){
+            document.getElementById("number"+obj.name).innerHTML="";
+            document.getElementById("ans1").innerHTML=parseFloat(q)-parseFloat(document.getElementById("price"+obj.name).value);
+            }
+            else if(r!="")
+            {
+            r=parseInt(r)-1;
+            document.getElementById("number"+obj.name).innerHTML=r;
+            document.getElementById("ans1").innerHTML=parseFloat(q)-parseFloat(document.getElementById("price"+obj.name).value);
+            }
+            r=null;
+            q=null;
+        }
+        function submit_res(){
+            var list1=[];
+            var a="";
+            var b="";
+            var d="";
+            var c=0;
+            for (c=0;c<i;c++)
+            {
+            a=document.getElementById("title"+c).value;
+            b=document.getElementById("price"+c).value;
+            d=document.getElementById("number"+c).innerHTML;
+            if (d!="")
+            {
+            list1.push(a+"/"+b+"/"+d);
+            }
+            document.getElementById("result").value = list1.join("%")+"%"+(document.getElementById("ans1").innerHTML);
+            document.getElementById("form1").submit();
+            }
+        }
+    </script>
+    <form method="post" id="form1">
+    <input type="hidden" name="result" id="result" value="" >
+    <div class="issue_list_div">
+        <ul class="issue_list_ul">
+            {% for issue in ans %}
+                <li class="issue_list_li">
+                    <img src="{{ issue[3] }}" width="200" height="200" style="float:left" >
+                    <div style = "float:right;" id="divdiv">
+                    <script type="text/javascript">
+                    addInput("{{ issue[1] }}","{{ issue[0] }}");
+                    </script>
+                    </div>
+                    <div class="issue_div">
+                        <div class="issue_content">
+                            <h1>
+                                {{ issue[0] }}
+                            </h1>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[2] }}
+                            </page>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[1] }}元
+                            </page>
+                            <br/>
+                        </div>
+                    </div>
+                </li>
+                <br/>
+                <br/>
+            <br/>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="issue_content">
+        <h1>总共价格为:&nbsp&nbsp(运送费3元)</h1>
+        <h1 id="ans1">3</h1>
+    </div>
+    <button type="button" class="btn btn-default" onclick="submit_res()">下单</button>
+    </form>
+</div>
+
+{% endblock %}
+{% block formula_class %}
+active
+{% endblock %}

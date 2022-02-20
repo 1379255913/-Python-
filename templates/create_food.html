@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}
+创建菜品
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/change_password.css">
+{% endblock %}
+
+{% block content %}
+<div class="change_password_content">
+    <div class="page-header" id="page_header">
+      <h1>创建菜品<small>Create Food</small></h1>
+    </div>
+    <div class="change_password_div">
+        <form method="post" enctype="multipart/form-data">
+            <span style=" font-size:20px;color: red" >
+                {% for item in get_flashed_messages() %}
+                {{ item }}
+                {% endfor %}
+            </span>
+            <div class="form-group">
+                <label for="exampleInputPassword1">
+                        菜品名称：
+                </label>
+                <input type="text" class="form-control" name="new_name" id="exampleInputPassword1" value="">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">菜品价格：</label>
+                <input type="text" class="form-control" name="new_price" id="exampleInputPassword1" value="">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">菜品简介：</label>
+                <input type="text" class="form-control" name="new_info" id="exampleInputPassword1" value="">
+            </div>
+            <div class="form-group">
+            <label for="exampleInputPassword1">菜品类型（数字越低显示越靠前）</label>
+            <select style="width: 300px; height:30px;" name="type1" >
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            </select>
+          </div>
+            <div>
+                <label for="exampleInputPassword1">上传图片：</label>
+            <input type="file" size="30" name="new_photo"/>
+            </div>
+            <br/>
+            <div id="info_butt">
+              <button type="submit" class="btn btn-default">创建菜品</button>
+          </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

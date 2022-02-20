@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}
+订单详情
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/register.css">
+<link rel="stylesheet" href="/static/css/shop.css">
+{% endblock %}
+
+{% block content %}
+<div class="formula_content">
+    <div class="page-header" id="page_header">
+        <h1>订单详情</h1>
+    </div>
+    <script type="text/javascript">
+        var i = 0;
+        function addInput(t,z,z1) {
+            //使用DOM的创建元素方法
+            var o = document.createElement("input");
+            o.type = "button";
+            o.value = z1;
+            o.id = "button" + i++;
+            o.name=t+"/"+z;
+            o.addEventListener("click", function () {
+                change(this);
+            });
+            var p = document.createElement("input");
+            p.type = "text";
+            p.value = "";
+            p.id = "text" + i-1;
+            o.name=t+"/"+z;
+            o.addEventListener("click", function () {
+                change(this);
+            });
+            var k = document.getElementById("divdiv");
+            k.id = "div"+i;
+            k.appendChild(o);
+            o = null;//及时解除不再使用的变量引用,即将其赋值为 null;
+        }
+        function addInput2(t,z,z1) {
+            //使用DOM的创建元素方法
+            i++;
+            var o = document.createElement("input");
+            o.type = "button";
+            o.value = z1;
+            o.id = i;
+            o.name=t+"/"+z;
+            o.addEventListener("click", function () {
+                change2(this);
+            });
+            var p = document.createElement("input");
+            p.type = "text";
+            p.value = "";
+            p.id = "text" + i;
+            p.name="text" + i;
+            var k = document.getElementById("divdiv");
+            k.id = "div"+i;
+            k.appendChild(o);
+            k.appendChild(p);
+            o = null;//及时解除不再使用的变量引用,即将其赋值为 null;
+            p = null;
+        }
+        function adddata(t) {
+            var list1 = t.split("%");
+            var ans1 = list1.pop();
+            var table = document.createElement("table");
+            table.border = "1";
+            table.width = "400";
+            var tr, td;
+            for (let i = 0; i < list1.length; i++) {
+                //循环插入元素
+                tr = table.insertRow(table.rows.length);
+                let list2 = list1[i].split("/");
+                for (let j = 0; j < 3; j++) {
+                    td = tr.insertCell(tr.cells.length);
+                    td.innerHTML = list2[j];
+                    td.align = "center";
+                }
+            }
+            var k = document.getElementById("divd");
+            k.id="divd"+i;
+            k.appendChild(table);
+            k = document.getElementById("pagepage");
+            k.id="pagep"+i;
+            k.innerHTML = "总价(运送费3元)："+ans1;
+            k=null;
+        }
+        function change(obj) {
+            document.getElementById("result").value=obj.name;
+            document.getElementById("form1").submit()
+        }
+        function change2(obj) {
+            var r = confirm("你确定要打赏吗？");
+            if(r==true){
+            document.getElementById("result").value=obj.name;
+            document.getElementById("result2").value=obj.id;
+            document.getElementById("form1").submit()
+            }
+        }
+    </script>
+    <form method="post" id="form1">
+    <input type="hidden" name="result" id="result" value="" >
+    <input type="hidden" name="result2" id="result2" value="" >
+    <div class="issue_list_div">
+        <ul class="issue_list_ul">
+            {% for issue in ans %}
+                <li class="issue_list_li">
+                    {% if type==1 and issue[5]=='False' %}
+                    <div style = "float:right;" id="divdiv">
+                    <script type="text/javascript">
+                    addInput("{{ issue[2] }}","{{ issue[3] }}","接单");
+                    </script>
+                    </div>
+                    {% elif type==2 and issue[5]=='Get' %}
+                    <div style = "float:right;" id="divdiv">
+                    <script type="text/javascript">
+                    addInput("{{ issue[2] }}","{{ issue[3] }}","接单");
+                    </script>
+                    </div>
+                    {% elif type==2 and issue[5]=='Go' %}
+                    <div style = "float:right;" id="divdiv">
+                    <script type="text/javascript">
+                    addInput("{{ issue[2] }}","{{ issue[3] }}","确认送达");
+                    </script>
+                    </div>
+                    {% elif type==0 and issue[5]=='True' %}
+                    <div style = "float:right;" id="divdiv">
+                    <script type="text/javascript">
+                    addInput2("{{ issue[2] }}","{{ issue[3] }}","打赏骑手");
+                    </script>
+                    </div>
+                    {% endif %}
+                    <div class="issue_div">
+                        <div class="issue_content">
+                            <h1>
+                                {% if type!=1 %}
+                                店铺名：{{ issue[2] }}
+                                {% else %}
+                                用户名：{{ issue[2] }}
+                                {% endif %}
+                            </h1>
+                            <page class="page1" id="pagepage">
+                                总价(运送费3元)：
+                            </page>
+                            <div  class="issue_content" id="divd">订单详情：
+                            <script type="text/javascript">
+                            adddata("{{ issue[1] }}");
+                            </script>
+                            </div>
+                            <page class="page1">
+                                下单时间：{{ issue[3] }}
+                            </page>
+                            <br/>
+                            <page class="page1">
+                                {% if issue[5]!='True' %}
+                                预计送达时间：{{ issue[4] }}
+                                {% else %}
+                                实际送达时间：{{ issue[4] }}
+                                {% endif %}
+                            </page>
+                            <br/>
+                            <page class="page1">
+                                当前订单状态：
+                                {% if issue[5]=='False' %}
+                                    未接单
+                                {% elif issue[5]=='Get' %}
+                                    店铺已接单
+                                {% elif issue[5]=='Go' %}
+                                    骑手已接单
+                                {% elif issue[5]=='True' %}
+                                    已送达
+                                {% endif %}
+                            </page>
+                            {% if issue[6] and type!=2 %}
+                            <br/>
+                            <page class="page1">
+                                    <a href="{{ url_for('personal',Ino=issue[7]) }}">骑手：{{ issue[6] }}</a>
+                            </page>
+                            {% endif %}
+                            {% if issue[8] %}
+                            <br/>
+                            <page class="page1">
+                                    本单收入：{{ issue[8] }}
+                            </page>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+                <br/>
+                <br/>
+            <br/>
+            {% endfor %}
+        </ul>
+    </div>
+    </form>
+</div>
+
+{% endblock %}
+{% block formula_class %}
+active
+{% endblock %}

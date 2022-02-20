@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}
+修改个人信息
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/change_password.css">
+{% endblock %}
+
+{% block content %}
+<div class="change_password_content">
+    <div class="page-header" id="page_header">
+      <h1>修改信息<small>Change Information</small></h1>
+    </div>
+    <div class="change_password_div">
+        <form method="post" enctype="multipart/form-data">
+            <span style=" font-size:20px;color: red" >
+                {% for item in get_flashed_messages() %}
+                {{ item }}
+                {% endfor %}
+            </span>
+            <div class="form-group">
+                <label for="exampleInputPassword1">
+                    {% if type == 0 %}
+                        昵称
+                    {% elif type == 1 %}
+                        店铺名称
+                    {% elif type == 2 %}
+                        骑手姓名
+                    {% endif %}
+                </label>
+                <input type="text" class="form-control" name="new_nickname" id="exampleInputPassword1" value="{{ personal_info[0] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">联系方式：</label>
+                <input type="text" class="form-control" name="new_phone" id="exampleInputPassword1" value="{{ personal_info[1] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">地址：</label>
+                <input type="text" class="form-control" name="new_address" id="exampleInputPassword1" value="{{ personal_info[2] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">信息介绍：</label>
+                <input type="text" class="form-control" name="new_info" id="exampleInputPassword1" value="{{ personal_info[3] }}">
+            </div>
+            <div>
+                <label for="exampleInputPassword1">上传新图片：</label>
+            <input type="file" size="30" name="new_photo"/>
+            </div>
+            <br/>
+            <div id="info_butt">
+              <button type="submit" class="btn btn-default">修改信息</button>
+          </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

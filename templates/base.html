@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+{#        其他页面重写标题的地方#}
+        {% endblock %}
+    </title>
+    {% block css %}
+{#    其他页面引用样式或者js的地方#}
+    {% endblock %}
+    <link rel="stylesheet" href="/static/css/base.css">
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="navigation_bar">
+        <nav class="navbar navbar-default">
+          <div class="container-fluid">
+{#              由于这里我们不需要使用商标，所以对Bran部分进行了删除#}
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <ul class="nav navbar-nav">
+                <li class="{% block index_class %}{% endblock %}"><a href="{{ url_for('index') }}">首页<span class="sr-only">(current)</span></a></li>
+                <li class="{% block formula_class %}{% endblock %}"><a href="{{ url_for('shop') }}">商家列表</a></li>
+                  <!--
+                <li class="{% block source_class %}{% endblock %}"><a href="{{ url_for('source') }}">资源专区</a></li>
+                {% if email %}
+                    <li class="{% block post_file_class %}{% endblock %}"><a href="{{ url_for('post_file') }}">上传资源</a></li>
+                {% endif %}
+                -->
+              </ul>
+              <form class="navbar-form navbar-left">
+                <div class="form-group">
+                  <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+              </form>
+              <ul class="nav navbar-nav navbar-right">
+                 {% if email %}
+                    <li class=""><a href="{{ url_for('logout') }}">注销</a></li>
+                {% if type == 0 %}
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ nickname }} <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('personal',Ino=email) }}">个人中心</a></li>
+                        <li><a href="{{ url_for('change_password') }}">修改密码</a></li>
+                        <li><a href="{{ url_for('change_info') }}">修改个人信息</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
+                        <li><a href="{{ url_for('shop') }}">点餐</a></li>
+                      </ul>
+                    </li>
+                {% elif type == 1 %}
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ nickname }} <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('personal',Ino=email) }}">商家中心</a></li>
+                        <li><a href="{{ url_for('change_password') }}">修改密码</a></li>
+                        <li><a href="{{ url_for('change_info') }}">修改商家信息</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{ url_for('shop_detail',Ino=email) }}">已发布的菜品</a></li>
+                        <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
+                        <li><a href="{{ url_for('create_food') }}">创建菜品</a></li>
+                        <li><a href="{{ url_for('change_type') }}">编辑菜品类型</a></li>
+                      </ul>
+                    </li>
+                {% elif type == 2 %}
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ nickname }} <span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('personal',Ino=email) }}">个人中心</a></li>
+                        <li><a href="{{ url_for('change_password') }}">修改密码</a></li>
+                        <li><a href="{{ url_for('change_info') }}">修改骑手信息</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
+                      </ul>
+                    </li>
+                {% endif %}
+                {% else %}
+                    <li class="{% block register_class %}{% endblock %}"><a href="{{ url_for('register') }}">注册</a></li>
+                    <li class="{% block login_class %} {% endblock %}"><a href="{{ url_for('login') }}">登录</a></li>
+                {% endif %}
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </div><!-- /.container-fluid -->
+        </nav>
+    </div>
+    <div class="content" style="padding: 0;margin: 0;">
+        {% block content %}
+{#        其他页面重写页面内容的地方#}
+        {% endblock %}
+    </div>
+</body>
+</html>

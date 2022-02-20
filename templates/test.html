@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}
+店铺详情
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/shop.css">
+{% endblock %}
+
+{% block content %}
+<div class="formula_content">
+    <div class="page-header" id="page_header">
+        <h1>店铺详情</h1>
+    </div>
+    <div class="issue_list_div">
+        <ul class="issue_list_ul">
+            <script type="text/javascript">
+                var i = 0;
+                function addInput(t) {
+                    //使用DOM的创建元素方法
+                    var o = document.createElement("input");
+                    o.type = "button";
+                    o.value = "清除这个菜品";
+                    o.id = "button" + i++;
+                    o.name=t;
+                    document.body.appendChild(o);
+                    o = null;//及时解除不再使用的变量引用,即将其赋值为 null;
+                }
+            </script>
+            <script type="text/javascript">
+                    addInput("123");
+            </script>
+            <p id="result"></p>
+            {% for issue in ans %}
+                <li class="issue_list_li">
+                    <img src="{{ issue[3] }}" width="200" height="200" style="float:left" >
+                    {% if flag %}
+                    <div style = "text-align:right;">
+                    <script type="text/javascript">
+                    addInput(t);
+                    </script>
+                    </div>
+                    {% endif %}
+                    <div class="issue_div">
+                        <div class="issue_content">
+                            <h1>
+                                {{ issue[0] }}
+                            </h1>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[2] }}
+                            </page>
+                            <br/>
+                            <br/>
+                            <page class="page1">
+                                {{ issue[1] }}元
+                            </page>
+                            <br/>
+                        </div>
+                    </div>
+                </li>
+                <br/>
+                <br/>
+            <br/>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+{% block formula_class %}
+active
+{% endblock %}
