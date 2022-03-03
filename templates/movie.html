@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}
+视频展示
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/index.css">
+{% endblock %}
+
+{% block content %}
+<video  controls="controls">
+  <source src="'http://127.0.0.1:5000/'+{{ movie }}" type="video/mp4" />
+</video>
+{% endblock %}
+{% block index_class %}
+active
+{% endblock %}

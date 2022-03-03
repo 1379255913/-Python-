@@ -212,7 +212,11 @@ def shop():
             for i in range(len(issue_information)):
                 issue_information[i]=list(issue_information[i])
                 issue_information[i][4] ='-'.join(issue_information[i][4].split('@'))
-            return render_template('shop.html', issue_information=tuple(issue_information))
+            pager_obj = Pagination(request.args.get("page", 1), len(issue_information), request.path, request.args, per_page_count=10,
+                                   max_pager_count=11)
+            index_list = issue_information[pager_obj.start:pager_obj.end]
+            html = pager_obj.page_html()
+            return render_template('shop.html', issue_information=index_list,html=html)
         except Exception as e:
             raise e
 
@@ -221,7 +225,6 @@ def shop():
 def shop_detail(Ino):
     if request.method == 'POST':
         result=request.form.get("result")
-        print(result)
         cur = db.cursor()
         sql = "delete from shopdata where title = '%s'" % str(result)
         db.ping(reconnect=True)
@@ -239,7 +242,7 @@ def shop_detail(Ino):
         db.ping(reconnect=True)
         cur.execute(sql)
         shop_type = cur.fetchone()
-        sql = "select title, price, information, photo, type from shopdata where email = '%s' order by type" % Ino
+        sql = "select title, price, information, photo, type, movie from shopdata where email = '%s' order by type" % Ino
         db.ping(reconnect=True)
         cur.execute(sql)
         issue_information = cur.fetchall()
@@ -247,6 +250,11 @@ def shop_detail(Ino):
         return render_template('shop_detail.html',ans=issue_information,shop_type=shop_type,flag=flag)
     except Exception as e:
         raise e
+
+# 播放视频
+@app.route('/movie/<Ino>', methods=['GET', 'POST'])
+def movie(Ino):
+    return render_template('movie.html',movie=Ino)
 
 #点餐
 @app.route('/order/<Ino>', methods=['GET', 'POST'])
@@ -262,15 +270,12 @@ def order(Ino):
             db.ping(reconnect=True)
             cur.execute(sql)
             shop_type = cur.fetchone()
-            for j in range(10):
-                sql = "select title, price, information, photo, type from shopdata where type = '%s' and email = '%s'" % (
-                str(j), Ino)
-                db.ping(reconnect=True)
-                cur.execute(sql)
-                issue_information = list(cur.fetchall())
-                ans.extend(issue_information)
+            sql = "select title, price, information, photo, type, movie from shopdata where email = '%s' order by type" % Ino
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            issue_information = cur.fetchall()
             cur.close()
-            return render_template('order.html', ans=tuple(ans), shop_type=shop_type)
+            return render_template('order.html', ans=issue_information, shop_type=shop_type)
         except Exception as e:
             raise e
     if request.method == 'POST':
@@ -304,10 +309,8 @@ def orderdata(Ino):
         type1=session.get("type")
         information = request.form.get('result')
         information2 = request.form.get('result2')
-        print(information2)
         if not information2:
             t=information.split("/")
-            print(t)
             try:
                 cur = db.cursor()
                 sql = "select email from userinformation where nickname = '%s'" % t[0]
@@ -317,7 +320,6 @@ def orderdata(Ino):
                 t[0] = str(shop_name).split("'")[1]
                 if type1==1:sql = "select ino from orderdata where email = '%s' and submit_time = '%s'" % (t[0],t[1])
                 elif type1 == 2: sql = "select ino, email from orderdata where shop = '%s' and submit_time = '%s'" % (t[0], t[1])
-                print(sql)
                 db.ping(reconnect=True)
                 cur.execute(sql)
                 k=cur.fetchone()
@@ -340,7 +342,6 @@ def orderdata(Ino):
                     sql = "update orderdata set ino = '%s', arrive_time='%s' where shop = '%s' and submit_time = '%s'" % (p, time.strftime("%Y-%m-%d %H:%M:%S"), t[0], t[1])
                 elif p=="Get":sql = "update orderdata set ino = '%s' where email = '%s' and submit_time = '%s'" % (p,t[0],t[1])
                 else: sql = "update orderdata set ino = '%s', horseman='%s' where shop = '%s' and submit_time = '%s'" % (p,email,t[0],t[1])
-                print(sql)
                 db.ping(reconnect=True)
                 cur.execute(sql)
                 db.commit()
@@ -350,7 +351,6 @@ def orderdata(Ino):
         else:
             money=float(request.form.get('text'+information2))
             t = information.split("/")
-            print(t)
             try:
                 cur = db.cursor()
                 sql = "select email from userinformation where nickname = '%s'" % t[0]
@@ -414,8 +414,6 @@ def orderdata(Ino):
             ans.reverse()
             pager_obj = Pagination(request.args.get("page", 1), len(ans), request.path, request.args, per_page_count=10,
                                    max_pager_count=11)
-            print(request.path)
-            print(request.args)
             index_list = ans[pager_obj.start:pager_obj.end]
             html = pager_obj.page_html()
             return render_template('order_data.html', index_list=index_list, html=html)
@@ -525,9 +523,10 @@ def change_password():
         except Exception as e:
             raise e
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'JPG', 'PNG', 'gif', 'GIF'}
+ALLOWED_EXTENSIONS = {'jpg', 'JPG'}
+ALLOWED_EXTENSIONS2 = {'MP4', 'mp4'}
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1]
 def create_uuid():  # 生成唯一的图片的名称字符串，防止图片显示时的重名问题
     nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")  # 生成当前时间
     randomNum = random.randint(0, 100)  # 生成的随机整数n，其中0<=n<=100
@@ -562,7 +561,8 @@ def change_info():
         email = session.get('email')
         try:
             cur = db.cursor()
-            if new_photo and allowed_file(new_photo.filename):
+            t=allowed_file(new_photo.filename)
+            if new_photo and t in ALLOWED_EXTENSIONS:
                 path = "/static/img/"
                 file_path = path + create_uuid()+'.jpg'
                 new_photo.save(basedir+file_path)
@@ -596,12 +596,16 @@ def create_food():
         new_price = request.form.get('new_price')
         new_info = request.form.get('new_info')
         new_photo=request.files.get('new_photo')
+        new_movie = request.files.get('new_movie')
         type1 = request.form.get('type1')
         if not all([new_name,new_price,new_photo,new_info,type1]):
             flash("信息填写不全！")
             return render_template('create_food.html')
-        if not allowed_file(new_photo.filename):
+        if not allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
             flash("上传照片格式错误！")
+            return render_template('create_food.html')
+        if not allowed_file(new_movie.filename) in ALLOWED_EXTENSIONS2:
+            flash("上传视频格式错误！")
             return render_template('create_food.html')
         try:
             new_price=round(float(new_price),2)
@@ -613,8 +617,13 @@ def create_food():
             path = "/static/img/"
             file_path = path + create_uuid()+'.jpg'
             new_photo.save(basedir+file_path)
-            sql = "insert into shopdata(email, title, price, information, photo, type, likes, fav ,repeats) VALUES ('%s','%s','%s','%s','%s','%s','0','0','0')" % (
-                    email, new_name, new_price, new_info, file_path, type1)
+            movie_path=''
+            if new_movie:
+                path = "/static/movie/"
+                movie_path = path + create_uuid() + '.mp4'
+                new_movie.save(basedir + movie_path)
+            sql = "insert into shopdata(email, title, price, information, photo, type, likes, fav ,repeats, movie) VALUES ('%s','%s','%s','%s','%s','%s','0','0','0','%s')" % (
+                    email, new_name, new_price, new_info, file_path, type1, movie_path)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
