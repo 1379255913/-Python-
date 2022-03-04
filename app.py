@@ -263,7 +263,7 @@ def order(Ino):
     if request.method == 'GET':
         if '@' not in Ino:
             Ino = '@'.join(Ino.split('-'))
-        ans = []
+        email=session.get('email')
         try:
             cur = db.cursor()
             sql = "select * from shoptype where email = '%s'" % Ino
@@ -274,8 +274,25 @@ def order(Ino):
             db.ping(reconnect=True)
             cur.execute(sql)
             issue_information = cur.fetchall()
+            sql = "select food from likes where email = '%s' and shop_email = '%s'" % (email, Ino)
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            likes_inf = cur.fetchall()
+            sql = "select food from fav where email = '%s' and shop_email = '%s'" % (email, Ino)
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            fav_inf = cur.fetchall()
             cur.close()
-            return render_template('order.html', ans=issue_information, shop_type=shop_type)
+            k=[]
+            if likes_inf:
+                for value in likes_inf:
+                    k.append(value[0])
+            k2 = []
+            if fav_inf:
+                for value in fav_inf:
+                    k2.append(value[0])
+            print(k2)
+            return render_template('order.html', ans=issue_information, shop_type=shop_type, likes_inf=k,email=email,shop_email=Ino,fav_inf=k2)
         except Exception as e:
             raise e
     if request.method == 'POST':
@@ -421,7 +438,7 @@ def orderdata(Ino):
             raise e
     else: return redirect(url_for(('index')))
 
-# 问题详情
+# 评论详情
 @app.route('/issue/<Ino>', methods=['GET', 'POST'])
 @login_limit
 def issue_detail(Ino):
@@ -772,6 +789,60 @@ def source():
             return render_template('source.html',files = files)
         except Exception as e:
             raise e
+
+# 点赞
+@app.route('/like/<Ino>',methods=['POST'])
+@login_limit
+def like(Ino):
+    t=Ino.split('-')
+    cur = db.cursor()
+    sql = "select judge from likes where email = '%s' and shop_email = '%s' and food = '%s'" % (t[0],t[1],t[2])
+    db.ping(reconnect=True)
+    cur.execute(sql)
+    result = cur.fetchone()
+    try:
+        if not result:
+            sql = "insert into likes(email, shop_email, food, judge) VALUES ('%s','%s','%s','%s')" % (t[0],t[1],t[2],True)
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            db.commit()
+            cur.close()
+        else:
+            sql = "DELETE FROM likes WHERE email = '%s' and shop_email = '%s' and food = '%s'" % (t[0],t[1],t[2])
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            db.commit()
+            cur.close()
+    except Exception as e:
+        raise e
+    return ""
+
+# 收藏
+@app.route('/fav/<Ino>',methods=['POST'])
+@login_limit
+def fav(Ino):
+    t=Ino.split('-')
+    cur = db.cursor()
+    sql = "select judge from fav where email = '%s' and shop_email = '%s' and food = '%s'" % (t[0],t[1],t[2])
+    db.ping(reconnect=True)
+    cur.execute(sql)
+    result = cur.fetchone()
+    try:
+        if not result:
+            sql = "insert into fav(email, shop_email, food, judge) VALUES ('%s','%s','%s','%s')" % (t[0],t[1],t[2],True)
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            db.commit()
+            cur.close()
+        else:
+            sql = "DELETE FROM fav WHERE email = '%s' and shop_email = '%s' and food = '%s'" % (t[0],t[1],t[2])
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            db.commit()
+            cur.close()
+    except Exception as e:
+        raise e
+    return ""
 
 # 在线查看文件
 @app.route('/online_file/<Fno>')

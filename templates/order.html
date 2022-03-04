@@ -15,6 +15,8 @@
         <h1>点菜</h1>
     </div>
     <script type="text/javascript">
+        var ema="{{ email|safe }}";
+        var ema2="{{ shop_email|safe }}";
         var ans1=0;
         var i = 0;
         function addInput(t,d) {
@@ -60,6 +62,100 @@
             j = null;
             l = null;
             i++;
+        }
+        function likes(obj){
+            var o = document.createElement("img");
+            if (obj=='yes'){
+            o.src = "/static/img/like_yes.png";
+            o.title="点击取消点赞";
+            }
+            else{
+            o.src = "/static/img/like_no.png";
+            o.title="点击点赞";
+            }
+            o.id = "like" + (i-1);
+            o.name=i-1;
+            o.width="40";
+            o.height="40";
+            o.style="cursor:pointer";
+            o.onclick = function () {
+                var m=this.name;
+                document.getElementById("test").innerHTML="/like/"+ema+"-"+ema2+"-"+document.getElementById("title"+m).value;
+                if (this.src.indexOf("/static/img/like_yes.png") != -1){
+                this.src="/static/img/like_no.png";
+                this.title="点击点赞";
+                }
+                else{this.src="/static/img/like_yes.png";
+                this.title="点击取消点赞";
+                }
+                $.ajax({
+                   url : "/like/"+ema+"-"+ema2+"-"+document.getElementById("title"+m).value,
+                   type : "POST",
+                   data : "",
+                   success : function(result) {
+                       console.log(result);
+                       if (result)
+                       {
+                           console.log("success")
+
+                       }
+                   },
+                   error:function(msg){
+                     console.log("error:",msg)
+                   }
+                 })
+            };
+            var k = document.getElementById("div"+(i-1));
+            k.appendChild(o);
+            o=null;
+            k=null;
+        }
+        function fav(obj){
+            var o = document.createElement("img");
+            if (obj=='yes'){
+            o.src = "/static/img/fav_yes.png";
+            o.title="点击取消收藏"
+            }
+            else{
+            o.src = "/static/img/fav_no.png";
+            o.title="点击收藏"
+            }
+            o.id = "fav" + (i-1);
+            o.name=i-1;
+            o.width="40";
+            o.height="40";
+            o.style="cursor:pointer";
+            o.onclick = function () {
+                var m=this.name;
+                document.getElementById("test").innerHTML="/fav/"+ema+"-"+ema2+"-"+document.getElementById("title"+m).value;
+                if (this.src.indexOf("/static/img/fav_yes.png") != -1){
+                this.src="/static/img/fav_no.png";
+                this.title="点击收藏";
+                }
+                else{this.src="/static/img/fav_yes.png";
+                this.title="点击取消收藏";
+                }
+                $.ajax({
+                   url : "/fav/"+ema+"-"+ema2+"-"+document.getElementById("title"+m).value,
+                   type : "POST",
+                   data : "",
+                   success : function(result) {
+                       console.log(result);
+                       if (result)
+                       {
+                           console.log("success")
+
+                       }
+                   },
+                   error:function(msg){
+                     console.log("error:",msg)
+                   }
+                 })
+            };
+            var k = document.getElementById("div"+(i-1));
+            k.appendChild(o);
+            o=null;
+            k=null;
         }
         function add_number(obj) {
             var r=document.getElementById("number"+obj.name).innerHTML;
@@ -113,6 +209,7 @@
     </script>
     <form method="post" id="form1">
     <input type="hidden" name="result" id="result" value="" >
+        <p id="test">123</p>
     <div class="issue_list_div">
         <ul class="issue_list_ul">
             {% for issue in ans %}
@@ -121,6 +218,28 @@
                     <div style = "float:right;" id="divdiv">
                     <script type="text/javascript">
                     addInput("{{ issue[1] }}","{{ issue[0] }}");
+                    {% if likes_inf %}
+                    {% if issue[0] in likes_inf %}
+                    likes("yes");
+                    document.getElementById("test").innerHTML="1";
+                    {% else %}
+                    likes("no");
+                    document.getElementById("test").innerHTML="2";
+                    {% endif %}
+                    {% else %}
+                    likes("no");
+                    {% endif %}
+                    {% if fav_inf %}
+                    {% if issue[0] in fav_inf %}
+                    fav("yes");
+                    document.getElementById("test").innerHTML="1";
+                    {% else %}
+                    fav("no");
+                    document.getElementById("test").innerHTML="2";
+                    {% endif %}
+                    {% else %}
+                    fav("no");
+                    {% endif %}
                     </script>
                     </div>
                     <div class="issue_div">
@@ -129,6 +248,9 @@
                                 {{ issue[0] }}
                             </h1>
                             <br/>
+                            {% if issue[5] %}
+                            <a href="http://127.0.0.1:5000{{ issue[5] }}" target="_blank">点击这里查看商品详情</a>
+                            {% endif %}
                             <br/>
                             <page class="page1">
                                 {{ issue[2] }}
