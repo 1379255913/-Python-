@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+我的收藏
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/personal.css">
+<link rel="stylesheet" href="/static/css/register.css">
+{% endblock %}
+
+{% block content %}
+<div class="personal_content">
+    <div class="page-header" id="page_header">
+      <h1>我的收藏<small>My favorite</small></h1>
+    </div>
+    <div class="personal_info">
+        <table>
+            {% for issue in fav_list %}
+            <tr class="personal_tr">
+                <td class="personal_td">
+                    店铺:<a href="{{ url_for('order',Ino=issue[2]) }}">{{ issue[0] }}</a>
+                </td>
+                <td class="personal_td">
+                    商品：{{ issue[1] }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+    <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+        </nav>
+</div>
+{% endblock %}
