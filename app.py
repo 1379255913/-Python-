@@ -204,6 +204,28 @@ def my_fav():
         return render_template('my_fav.html', fav_list=index_list, html=html)
 
 
+# 我的关注
+@app.route('/my_follow')
+@login_limit
+def my_follow():
+    if request.method == 'GET':
+        email = session.get("email")
+        try:
+            cur = db.cursor()
+            sql = "select UserInformation.nickname,follow.follow_email from follow,UserInformation where follow.follow_email = UserInformation.email and follow.email = '%s'" % email
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            fav_list = list(cur.fetchall())
+            pager_obj = Pagination(request.args.get("page", 1), len(fav_list), request.path, request.args,
+                                   per_page_count=10,
+                                   max_pager_count=11)
+            index_list = fav_list[pager_obj.start:pager_obj.end]
+            html = pager_obj.page_html()
+        except Exception as e:
+            raise e
+        return render_template('my_follow.html', follow_list=index_list, html=html)
+
+
 # 论坛页面
 @app.route('/formula')
 def formula():
@@ -938,6 +960,30 @@ def follow():
     except Exception as e:
         raise e
     return ""
+
+
+# 商家查询
+@app.route('/search_ans/<Ino>', methods=['POST','GET'])
+@login_limit
+def search_ans(Ino):
+    try:
+        cur = db.cursor()
+        sql = "select nickname, address, information, photo, email from UserInformation where type = '%s' and nickname like '%%%s%%'" % ('1',Ino)
+        db.ping(reconnect=True)
+        cur.execute(sql)
+        issue_information = list(cur.fetchall())
+        cur.close()
+        for i in range(len(issue_information)):
+            issue_information[i] = list(issue_information[i])
+            issue_information[i][4] = '-'.join(issue_information[i][4].split('@'))
+        pager_obj = Pagination(request.args.get("page", 1), len(issue_information), request.path, request.args,
+                               per_page_count=10,
+                               max_pager_count=11)
+        index_list = issue_information[pager_obj.start:pager_obj.end]
+        html = pager_obj.page_html()
+        return render_template('shop.html', issue_information=index_list, html=html)
+    except Exception as e:
+        raise e
 
 
 # 在线查看文件

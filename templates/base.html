@@ -34,9 +34,9 @@
               </ul>
               <form class="navbar-form navbar-left">
                 <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Search">
+                  <input type="text" class="form-control" placeholder="寻找商家" id="search_text">
                 </div>
-                <button type="submit" class="btn btn-default">Submit</button>
+                <input type="button" class="btn btn-default" value="查询" onclick="search_button(this)">
               </form>
               <ul class="nav navbar-nav navbar-right">
                  {% if email %}
@@ -51,6 +51,7 @@
                         <li role="separator" class="divider"></li>
                         <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
                         <li><a href="{{ url_for('my_fav') }}">我的收藏</a></li>
+                        <li><a href="{{ url_for('my_follow') }}">我的关注</a></li>
                         <li><a href="{{ url_for('shop') }}">点餐</a></li>
                       </ul>
                     </li>
@@ -94,5 +95,11 @@
 {#        其他页面重写页面内容的地方#}
         {% endblock %}
     </div>
+<script>
+    function search_button(obj) {
+        var ans = document.getElementById("search_text").value;
+        window.location.href = ('/search_ans/'+ans);
+    }
+</script>
 </body>
 </html>
