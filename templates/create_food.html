@@ -37,16 +37,13 @@
             <div class="form-group">
             <label for="exampleInputPassword1">菜品类型（数字越低显示越靠前）</label>
             <select style="width: 300px; height:30px;" name="type1" >
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
+            {% for j in range(type1|length) %}
+            {% if type1[j] %}
+            <option value="{{ j }}">{{ type1[j] }}</option>
+            {% else %}
+            <option value="{{ j }}">未定义{{ j }}</option>
+            {% endif %}
+            {% endfor %}
             </select>
           </div>
             <div>

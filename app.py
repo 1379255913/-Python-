@@ -682,7 +682,13 @@ def change_info():
 @login_limit
 def create_food():
     if request.method == 'GET':
-        return render_template('create_food.html')
+        email=session.get('email')
+        cur = db.cursor()
+        sql = "select type0, type1, type2, type3, type4, type5, type6, type7, type8, type9 from shoptype where email = '%s'" % email
+        db.ping(reconnect=True)
+        cur.execute(sql)
+        type1 = cur.fetchone()
+        return render_template('create_food.html',type1=type1)
     if request.method == 'POST':
         new_name = request.form.get('new_name')
         new_price = request.form.get('new_price')

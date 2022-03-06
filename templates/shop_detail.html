@@ -59,6 +59,9 @@
                                 {{ issue[0] }}
                             </h1>
                             <br/>
+                            <page class="page1">
+                                {{ shop_type[ issue[4]|int +1] }}
+                            </page>
                             {% if issue[5] %}
                             <a href="http://127.0.0.1:5000{{ issue[5] }}" target="_blank">点击这里查看商品详情</a>
                             {% endif %}
