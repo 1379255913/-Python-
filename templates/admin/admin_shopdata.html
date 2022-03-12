@@ -1,0 +1,57 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+商家菜品
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">商家菜品</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>商家</th>
+                                <th>商品名</th>
+                                <th>价格</th>
+                                <th>详细信息</th>
+                                <th>图片</th>
+                                <th>类型</th>
+                                <th>点赞</th>
+                                <th>收藏</th>
+                                <th>视频</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td>{{ i.userinformation.nickname }}</td>
+                                <td>{{ i.title }}</td>
+                                <td>{{ i.price }}</td>
+                                <td>{{ i.information }}</td>
+                                <td><a href="{{ i.photo }}">查看</a></td>
+                                <td>{{ i.type }}</td>
+                                <td>{{ i.likes }}</td>
+                                <td>{{ i.fav }}</td>
+                                {% if i.movie %}
+                                <td><a href="{{ i.movie }}">查看</a></td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block shopdata_class %}
+active
+{% endblock %}

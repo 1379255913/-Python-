@@ -17,7 +17,7 @@ class Pagination(object):
     max_pager_count——指定页面最大显示页码
     """
 
-    def __init__(self, current_page, total_count, base_url, params, per_page_count=4, max_pager_count=11):
+    def __init__(self, current_page, total_count, base_url, params, per_page_count=10, max_pager_count=11):
         try:
             current_page = int(current_page)
         except Exception as e:

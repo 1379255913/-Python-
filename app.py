@@ -12,12 +12,21 @@ import re
 from decorators import login_limit
 from uploader import Uploader
 from page_utils import Pagination
+from databank import db as db2
+
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 path_photo = '/static/img/None.jpg'
 # 从对象中导入config
 app.config.from_object(config)
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:1379255913zyy@localhost:3306/OnlineForumPlatform"
+# 动态追踪数据库的修改. 性能不好. 且未来版本中会移除. 目前只是为了解决控制台的提示才写的
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"]="fjeifjin"
+db2.init_app(app)
+from Background import admin
+app.register_blueprint(admin)
 
 
 # 登录状态保持
@@ -651,8 +660,7 @@ def change_info():
         email = session.get('email')
         try:
             cur = db.cursor()
-            t = allowed_file(new_photo.filename)
-            if new_photo and t in ALLOWED_EXTENSIONS:
+            if new_photo and allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
                 path = "/static/img/"
                 file_path = path + create_uuid() + '.jpg'
                 new_photo.save(basedir + file_path)
@@ -883,8 +891,10 @@ def source():
 @login_limit
 def like(Ino):
     t = Ino.split('-')
+    print(t)
     cur = db.cursor()
     sql = "select judge from likes where email = '%s' and shop_email = '%s' and food = '%s'" % (t[0], t[1], t[2])
+    print(sql)
     db.ping(reconnect=True)
     cur.execute(sql)
     result = cur.fetchone()
@@ -892,12 +902,14 @@ def like(Ino):
         if not result:
             sql = "insert into likes(email, shop_email, food, judge) VALUES ('%s','%s','%s','%s')" % (
             t[0], t[1], t[2], True)
+            print(sql)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
             cur.close()
         else:
             sql = "DELETE FROM likes WHERE email = '%s' and shop_email = '%s' and food = '%s'" % (t[0], t[1], t[2])
+            print(sql)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
@@ -1118,6 +1130,8 @@ def upload():
     res.headers['Access-Control-Allow-Origin'] = '*'
     res.headers['Access-Control-Allow-Headers'] = 'X-Requested-With,X_Requested_With'
     return res
+
+
 
 
 if __name__ == '__main__':

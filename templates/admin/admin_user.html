@@ -1,0 +1,59 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+用户信息
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">用户信息</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>电子邮箱</th>
+                                <th>昵称/名称</th>
+                                <th>类型</th>
+                                <th>创建时间</th>
+                                <th>电话</th>
+                                <th>地址</th>
+                                <th>介绍</th>
+                                <th>照片</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td>{{ i.email }}</td>
+                                <td>{{ i.nickname }}</td>
+                                {% if i.type==0 %}
+                                <td>用户</td>
+                                {% elif i.type==1 %}
+                                <td>商家</td>
+                                {% elif i.type==2 %}
+                                <td>骑手</td>
+                                {% elif i.type==3 %}
+                                <td>管理员</td>
+                                {% endif %}
+                                <td>{{ i.create_time }}</td>
+                                <td>{{ i.phone }}</td>
+                                <td>{{ i.address }}</td>
+                                <td>{{ i.information }}</td>
+                                <td><a href="{{ i.photo }}">查看</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block user_class %}
+active
+{% endblock %}
