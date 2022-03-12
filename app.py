@@ -120,11 +120,14 @@ def login():
                 flash("该用户不存在")
                 return render_template('login.html')
             if check_password_hash(result[0], password):
-                session['email'] = email
-                session['type'] = result[1]
-                session.permanent = True
-                cur.close()
-                return redirect(url_for('index'))
+                if result[1]==3:
+                    return redirect(url_for('admin.index'))
+                else:
+                    session['email'] = email
+                    session['type'] = result[1]
+                    session.permanent = True
+                    cur.close()
+                    return redirect(url_for('index'))
             else:
                 flash("密码错误！")
                 return render_template('login.html')

@@ -36,7 +36,7 @@ class UserInformation(db.Model):
     information = db.Column(db.String(255))
     photo = db.Column(db.String(255))
     children1 = db.relationship("ShopData", backref="userinformation")
-
+    children2 = db.relationship("ShopType", backref="userinformation")
     def __repr__(self):
         return "Role: %s %s %s %s %s %s %s %s %s " % (
         self.email, self.nickname, self.password, self.type, self.create_time, self.phone, self.address,
@@ -46,7 +46,7 @@ class UserInformation(db.Model):
 class ShopType(db.Model):
     __tablename__ = "shoptype"
 
-    email = db.Column(db.String(255), primary_key=True)
+    email = db.Column(db.String(255),db.ForeignKey('userinformation.email'), primary_key=True)
     type0 = db.Column(db.String(255))
     type1 = db.Column(db.String(255))
     type2 = db.Column(db.String(255))
@@ -57,6 +57,9 @@ class ShopType(db.Model):
     type7 = db.Column(db.String(255))
     type8 = db.Column(db.String(255))
     type9 = db.Column(db.String(255))
+    def __repr__(self):
+        return "Role: %s %s %s %s %s %s %s %s %s %s %s %s" % (
+        self.email, self.type0, self.type1, self.type2, self.type3, self.type4, self.type5, self.type6, self.type7, self.type8, self.type9, self.userinformation.nickname)
 
 
 class ShopData(db.Model):

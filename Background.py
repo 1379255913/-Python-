@@ -24,3 +24,15 @@ def shopdata():
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
         return render_template('admin_shopdata.html', inf=index_list, html=html)
+
+
+@admin.route('/shoptype')
+def shoptype():
+    if request.method == 'GET':
+        str1 = ShopType.query.all()
+        pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
+                               per_page_count=10,
+                               max_pager_count=11)
+        index_list = str1[pager_obj.start:pager_obj.end]
+        html = pager_obj.page_html()
+        return render_template('admin_shoptype.html', inf=index_list, html=html)
