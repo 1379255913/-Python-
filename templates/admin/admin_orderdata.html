@@ -1,0 +1,59 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+订单信息
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">订单信息</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>用户</th>
+                                <th>订单信息</th>
+                                <th>商家</th>
+                                <th>提交时间</th>
+                                <th>到达时间</th>
+                                <th>订单状态</th>
+                                <th>骑手</th>
+                                <th>订单id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td>{{ i.nickname_user }}</td>
+                                <td>{{ i.information }}</td>
+                                <td>{{ i.nickname_shop }}</td>
+                                <td>{{ i.submit_time }}</td>
+                                <td>{{ i.arrive_time }}</td>
+                                {% if i.ino=='False' %}
+                                    <td>未接单</td>
+                                {% elif i.ino=='Get' %}
+                                    <td>店铺已接单</td>
+                                {% elif i.ino=='Go' %}
+                                    <td>骑手已接单</td>
+                                {% elif i.ino=='True' %}
+                                    <td>已送达</td>
+                                {% endif %}
+                                <td>{{ i.nickname_horseman }}</td>
+                                <td>{{ i.id }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block orderdata_class %}
+active
+{% endblock %}

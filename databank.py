@@ -91,7 +91,10 @@ class OrderMoney(db.Model):
     money_shop = db.Column(db.String(255))
     money_horse = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
-
+    def __repr__(self):
+        return "Role: %s %s %s %s %s %s %s" % (
+        self.email, self.shop, self.horseman, self.submit_time,
+        self.money_shop, self.money_horse, self.id)
 
 class OrderData(db.Model):
     __tablename__ = "orderdata"
@@ -104,7 +107,10 @@ class OrderData(db.Model):
     ino = db.Column(db.String(255))
     horseman = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
-
+    def __repr__(self):
+        return "Role: %s %s %s %s %s %s %s %s" % (
+        self.email, self.information, self.shop, self.submit_time, self.arrive_time,
+        self.ino, self.horseman,self.id)
 
 class Likes(db.Model):
     __tablename__ = "likes"
@@ -114,7 +120,9 @@ class Likes(db.Model):
     food = db.Column(db.String(255), nullable=False)
     judge = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
-
+    def __repr__(self):
+        return "Role: %s %s %s %s %s" % (
+        self.email, self.shop_email, self.food, self.judge,self.id)
 
 class Fav(db.Model):
     __tablename__ = "fav"
@@ -124,7 +132,9 @@ class Fav(db.Model):
     food = db.Column(db.String(255), nullable=False)
     judge = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
-
+    def __repr__(self):
+        return "Role: %s %s %s %s %s" % (
+        self.email, self.shop_email, self.food, self.judge,self.id)
 
 class Follow(db.Model):
     __tablename__ = "follow"

@@ -1,0 +1,44 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+收藏
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">收藏</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>用户</th>
+                                <th>商家</th>
+                                <th>点赞商品</th>
+                                <th>id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td>{{ i.nickname_user }}</td>
+                                <td>{{ i.nickname_shop }}</td>
+                                <td>{{ i.food }}</td>
+                                <td>{{ i.id }}</td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block fav_class %}
+active
+{% endblock %}

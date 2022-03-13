@@ -62,6 +62,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="#">设置</a></li>
                     <li><a href="#">帮助</a></li>
+                    <li><a href="{{ url_for('index') }}">退出</a></li>
                 </ul>
                 <form class="navbar-form navbar-right">
                     <input type="text" class="form-control" placeholder="Search...">
@@ -77,12 +78,12 @@
                     <li class="{% block user_class %}{% endblock %}"><a href="{{ url_for('admin.index') }}">用户信息 <span class="sr-only">(current)</span></a></li>
                     <li class="{% block shopdata_class %}{% endblock %}"><a href="{{ url_for('admin.shopdata') }}">商家菜品</a></li>
                     <li class="{% block shoptype_class %}{% endblock %}"><a href="{{ url_for('admin.shoptype') }}">商家菜品类型</a></li>
-                    <li class="{% block orderdata_class %}{% endblock %}"><a href="#">订单信息</a></li>
-                    <li class="{% block ordermoney_class %}{% endblock %}"><a href="#">订单收益</a></li>
+                    <li class="{% block orderdata_class %}{% endblock %}"><a href="{{ url_for('admin.orderdata') }}">订单信息</a></li>
+                    <li class="{% block ordermoney_class %}{% endblock %}"><a href="{{ url_for('admin.ordermoney') }}">订单收益</a></li>
                 </ul>
                 <ul class="nav nav-sidebar">
-                    <li class="{% block likes_class %}{% endblock %}"><a href="">点赞</a></li>
-                    <li class="{% block fav_class %}{% endblock %}"><a href="">收藏</a></li>
+                    <li class="{% block likes_class %}{% endblock %}"><a href="{{ url_for('admin.likes') }}">点赞</a></li>
+                    <li class="{% block fav_class %}{% endblock %}"><a href="{{ url_for('admin.fav') }}">收藏</a></li>
                     <li class="{% block follow_class %}{% endblock %}"><a href="">关注</a></li>
                     <li class="{% block comment_class %}{% endblock %}"><a href="">商家评论</a></li>
                     <li class="{% block all_comment_class %}{% endblock %}"><a href="">所有评论</a></li>
