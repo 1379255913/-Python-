@@ -112,3 +112,64 @@ def fav():
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
         return render_template('admin_fav.html', inf=index_list, html=html)
+
+
+@admin.route('/follow')
+def follow():
+    if request.method == 'GET':
+        str1 = Follow.query.all()
+        for j in str1:
+            str2=UserInformation.query.filter_by(email=j.email).first()
+            j.nickname_user=str2.nickname
+            str2 = UserInformation.query.filter_by(email=j.follow_email).first()
+            j.nickname_followed = str2.nickname
+        pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
+                               per_page_count=10,
+                               max_pager_count=11)
+        index_list = str1[pager_obj.start:pager_obj.end]
+        html = pager_obj.page_html()
+        return render_template('admin_follow.html', inf=index_list, html=html)
+
+@admin.route('/issue')
+def issue():
+    if request.method == 'GET':
+        str1 = Issue.query.all()
+        for j in str1:
+            j.Ino2=j.Ino[:30]
+            str2 = UserInformation.query.filter_by(email=j.email).first()
+            j.nickname_user = str2.nickname
+            str2 = UserInformation.query.filter_by(email=j.shop).first()
+            j.nickname_shop = str2.nickname
+        pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
+                               per_page_count=10,
+                               max_pager_count=11)
+        index_list = str1[pager_obj.start:pager_obj.end]
+        html = pager_obj.page_html()
+        return render_template('admin_issue.html', inf=index_list, html=html)
+
+@admin.route('/ans/<Ino>')
+def ans(Ino):
+    if request.method == 'GET':
+        return Ino
+
+@admin.route('/comment')
+def comment():
+    if request.method == 'GET':
+        str1 = Comment.query.all()
+        for j in str1:
+            j.Ino2=j.Ino[:30]
+            str2 = UserInformation.query.filter_by(email=j.email).first()
+            j.nickname_user = str2.nickname
+        pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
+                               per_page_count=10,
+                               max_pager_count=11)
+        index_list = str1[pager_obj.start:pager_obj.end]
+        html = pager_obj.page_html()
+        return render_template('admin_comment.html', inf=index_list, html=html)
+
+@admin.route('/comment_detail', methods=['POST'])
+def comment_detail():
+    if request.method == 'POST':
+        id=request.form.get("id")
+        str1 = Comment.query.filter_by(id=id).first()
+        return render_template('admin_comment_detail.html',inf=str1)

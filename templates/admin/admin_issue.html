@@ -1,0 +1,45 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+商家评论
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">商家评论</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Ino</th>
+                                <th>楼主</th>
+                                <th>标题</th>
+                                <th>评论时间</th>
+                                <th>商家</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td >{{ i.Ino2 }}...<a href="{{ url_for('admin.ans', Ino=i.Ino) }}">点击查看完整</a></td>
+                                <td>{{ i.nickname_user }}</td>
+                                <td>{{ i.title }}</td>
+                                <td>{{ i.issue_time }}</td>
+                                <td>{{ i.nickname_shop }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block comment_class %}
+active
+{% endblock %}

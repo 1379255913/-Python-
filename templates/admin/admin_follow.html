@@ -1,0 +1,44 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+关注
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">关注</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>关注者</th>
+                                <th>被关注者</th>
+                                <th>关注状态</th>
+                                <th>id</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for i in inf %}
+                            <tr>
+                                <td>{{ i.nickname_user }}</td>
+                                <td>{{ i.nickname_followed }}</td>
+                                <td>{{ i.others }}</td>
+                                <td>{{ i.id }}</td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+{% endblock %}
+{% block follow_class %}
+active
+{% endblock %}

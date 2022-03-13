@@ -84,9 +84,9 @@
                 <ul class="nav nav-sidebar">
                     <li class="{% block likes_class %}{% endblock %}"><a href="{{ url_for('admin.likes') }}">点赞</a></li>
                     <li class="{% block fav_class %}{% endblock %}"><a href="{{ url_for('admin.fav') }}">收藏</a></li>
-                    <li class="{% block follow_class %}{% endblock %}"><a href="">关注</a></li>
-                    <li class="{% block comment_class %}{% endblock %}"><a href="">商家评论</a></li>
-                    <li class="{% block all_comment_class %}{% endblock %}"><a href="">所有评论</a></li>
+                    <li class="{% block follow_class %}{% endblock %}"><a href="{{ url_for('admin.follow') }}">关注</a></li>
+                    <li class="{% block comment_class %}{% endblock %}"><a href="{{ url_for('admin.issue') }}">商家评论</a></li>
+                    <li class="{% block all_comment_class %}{% endblock %}"><a href="{{ url_for('admin.comment') }}">所有评论</a></li>
                 </ul>
             </div>
 

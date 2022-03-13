@@ -1,0 +1,16 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+评论详情
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">评论详情</h1>
+<article>
+    {{ inf.comment|safe }}
+</article>
+{% endblock %}

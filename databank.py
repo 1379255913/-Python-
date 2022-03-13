@@ -143,7 +143,9 @@ class Follow(db.Model):
     follow_email = db.Column(db.String(255), nullable=False)
     others = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
-
+    def __repr__(self):
+        return "Role: %s %s %s %s" % (
+        self.email, self.follow_email, self.others,self.id)
 
 class Issue(db.Model):
     __tablename__ = "issue"
@@ -153,7 +155,9 @@ class Issue(db.Model):
     title = db.Column(db.Text)
     issue_time = db.Column(db.DateTime)
     shop = db.Column(db.String(255))
-
+    def __repr__(self):
+        return "Role: %s %s %s %s %s" % (
+        self.Ino, self.email, self.title, self.issue_time,self.shop)
 
 class Comment(db.Model):
     __tablename__ = "comment"
@@ -165,6 +169,10 @@ class Comment(db.Model):
     email = db.Column(db.String(128))
     shop = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
+    def __repr__(self):
+        return "Role: %s %s %s %s %s %s %s" % (
+        self.Cno, self.Ino, self.comment, self.comment_time,self.email,self.shop,self.id)
+
 
 # class User(db.Model):
 #     # 给表重新定义一个名称，默认名称是类名的小写，比如该类默认的表名是user。
