@@ -13,21 +13,19 @@ from decorators import login_limit
 from uploader import Uploader
 from page_utils import Pagination
 from databank import db as db2
-
-
+from mail import mail
+from databank import Confirm,UserInformation
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 path_photo = '/static/img/None.jpg'
 # 从对象中导入config
 app.config.from_object(config)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:1379255913zyy@localhost:3306/OnlineForumPlatform"
-# 动态追踪数据库的修改. 性能不好. 且未来版本中会移除. 目前只是为了解决控制台的提示才写的
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"]="fjeifjin"
 db2.init_app(app)
+mail.init_app(app)
 from Background import admin
 app.register_blueprint(admin)
-
+from Sendemail import email
+app.register_blueprint(email)
 
 # 登录状态保持
 @app.context_processor
@@ -133,6 +131,30 @@ def login():
                 return render_template('login.html')
         except Exception as e:
             raise e
+
+
+# 邮箱修改密码
+@app.route('/email_confirm', methods=['GET', 'POST'])
+def email_confirm():
+    if request.method == 'GET':
+        return render_template('email_confirm.html')
+    if request.method == 'POST':
+        email = request.form.get('the_email')
+        confirm = request.form.get('confirm')
+        password = request.form.get('new_password')
+        id=request.form.get('getid')
+        if not all([email, password,confirm]):
+            flash("请将信息填写完整！")
+            return render_template('email_confirm.html')
+        inf = Confirm.query.filter_by(id=id).first()
+        if not confirm==inf.secret:
+            flash("验证码错误！")
+            return render_template('email_confirm.html')
+        inf = UserInformation.query.filter_by(email=email).first()
+        inf.password=generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
+        print("OK")
+        return redirect(url_for(('index')))
+
 
 
 # 用户注销

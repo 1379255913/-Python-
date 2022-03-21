@@ -23,6 +23,24 @@ class Test(db.Model):
         return "Role: %s %s %s" % (self.id, self.name, self.inf)
 
 
+
+class Confirm(db.Model):
+    __tablename__ = "confirm"
+
+    id = db.Column(db.String(10),primary_key=True)
+    secret = db.Column(db.String(6))
+
+    # 给Role类创建一个uses属性，关联users表。
+    # backref是反向的给User类创建一个role属性，关联roles表。这是flask特殊的属性。
+    # users = db.relationship('User', backref="role")
+
+    # 相当于__str__方法。
+    def __repr__(self):
+        return "Role: %s %s" % (self.id, self.secret)
+
+
+
+
 class UserInformation(db.Model):
     __tablename__ = "userinformation"
 

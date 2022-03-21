@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}
+找回密码
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/change_password.css">
+{% endblock %}
+
+{% block content %}
+<div class="change_password_content">
+    <div class="page-header" id="page_header">
+      <h1>找回密码<small>Find Password</small></h1>
+    </div>
+    <div class="change_password_div">
+        <form method="post">
+            <div class="form-group">
+                <label>你的邮箱：</label>
+                <div style="float:right"> <input type="button" class="btn btn-default" id="btn" value="获取验证码">  </div>
+                {% if email %}
+                <input type="text" class="form-control" name="the_email"  id="input1"  value="{{email}}">
+                {% else %}
+                <input type="text" class="form-control" name="the_email"  id="input1"  placeholder="请输入你的邮箱">
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>验证码：</label>
+                <input type="text" class="form-control" name="confirm">
+            </div>
+            <div class="form-group">
+                <label>新密码：</label>
+                <input type="password" class="form-control" name="new_password" placeholder="新密码">
+            </div>
+            <input type="hidden" name="getid" id="hid">
+            <div id="password_butt">
+              <button type="submit" class="btn btn-default">修改密码</button>
+          </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+   var wait = 60;
+   var ID = ""
+    document.getElementById("btn").onclick = function() {
+        time(this);
+        sendemail();
+    }
+    function time(o) {
+        if (wait == 0) {
+            o.removeAttribute("disabled");
+            o.value = "获取验证码";
+            wait = 60;
+        } else {
+            o.setAttribute("disabled", true);
+            o.value = wait + "秒后可以重新发送";
+            wait--;
+            setTimeout(function() {
+                time(o)
+            }, 1000)
+        }
+    }
+    function sendemail() {
+        console.log("sendemail");
+        $.ajax({
+        url : "/email/email_captcha/",
+        type : "POST",
+        data : {
+            'email':document.getElementById("input1").value,
+        },
+        success : function(result) {
+            console.log(result);
+            if (result)
+            {
+                console.log("success")
+                ID=result
+                document.getElementById("hid").value=ID
+            }
+        },
+        error:function(msg){
+            console.log("error:",msg)
+        }
+        })
+    }
+</script>
+{% endblock %}
