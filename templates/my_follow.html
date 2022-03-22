@@ -23,7 +23,7 @@
                 </td>
                 <td class="personal_td">
                     <input type="button" value="取消关注" id="button{{ j }}" name="{{ j }}" onclick="buttonsend(this)">
-                    <input type="button" value="私聊" id="but{{ j }}">
+                    <input type="button" value="私聊" id="but{{ j }}" name="{{ j }}" onclick="private_send(this)">
                 </td>
             </tr>
             {% endfor %}
@@ -37,8 +37,8 @@
         </nav>
 </div>
 <script>
+var ema="{{ email|safe }}";
 function buttonsend(obj) {
-        var ema="{{ email|safe }}";
         var ema2= document.getElementById("url"+obj.name).name;
         if (obj.value=="关注"){
         obj.value="取消关注";
@@ -65,6 +65,35 @@ function buttonsend(obj) {
             console.log("error:",msg)
         }
         })
+
     }
+//发送POST请求跳转到指定页面
+        function httpPost(URL, PARAMS) {
+         var temp = document.createElement("form");
+         temp.action = URL;
+         temp.method = "post";
+         temp.style.display = "none";
+
+         for (var x in PARAMS) {
+          var opt = document.createElement("textarea");
+          opt.name = x;
+          opt.value = PARAMS[x];
+          temp.appendChild(opt);
+         }
+
+         document.body.appendChild(temp);
+         temp.submit();
+
+         return temp;
+        }
+        function private_send(obj){
+        var ema2= document.getElementById("url"+obj.name).name;
+        console.log(123)
+         var params = {
+          "user1": ema,
+          "user2": ema2,
+         };
+         httpPost("/chatroom/private", params);
+        }
     </script>
 {% endblock %}

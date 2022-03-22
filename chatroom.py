@@ -1,185 +1,101 @@
+import gevent
 from gevent import monkey
-monkey.patch_all(select=False)
+monkey.patch_all()
 import datetime
 import hashlib
-from flask import Flask, session, request, redirect, url_for, render_template, flash,Blueprint
-from flask_socketio import emit, join_room,SocketIO,leave_room, Namespace
+from flask import Flask, session, request, redirect, url_for, render_template, flash, Blueprint
+from flask_socketio import emit, join_room, leave_room, Namespace
 import os
-import query
-from geng import gengenerateID
+from databank import Messages,UserInformation
+from app import db2, socketio
+from decorators import login_limit
 
-user_dict1= {}
+user_dict1 = {}
 
-chatroom = Blueprint("chatroom",__name__,url_prefix='/chatroom',template_folder='templates/chatroom')   #定义模块名字为APP
+chatroom = Blueprint("chatroom", __name__, url_prefix='/chatroom', template_folder='templates')  # 定义模块名字为APP
 
-socketio = SocketIO(cors_allowed_origins="*") #防止出问题
-socketio.init_app(chatroom)   #创建socket实例
 user_dict = {}
 
-def getLoginDetails():    #获取用户登录状态
-    if 'email' not in session:
-        loggedIn = False
-        userName = 'please sign in'
+# 对字符串加密成整数
+def encrypt(srcStr, password='1938762450'):
+    # 将字符串转换成字节数组
+    data = bytearray(srcStr.encode('utf-8'))
+    # 把每个字节转换成数字字符串
+    strList = [str(byte) for byte in data]
+    # 给每个数字字符串前面加一个长度位
+    strList = [str(len(s)) + s for s in strList]
+    # 进行数字替换
+    for index0 in range(len(strList)):
+        tempStr = ""
+        for index in range(len(strList[index0])):
+            tempStr += password[int(strList[index0][index])]
+        strList[index0] = tempStr
+    return "".join(strList)
+
+# 把整数解密成字符串
+def decrypt(srcStr, password='1938762450'):
+    # 数字替换还原
+    tempStr = ""
+    for index in range(len(srcStr)):
+        tempStr += str(password.find(srcStr[index]))
+    # 去掉长度位，还原成字典
+    index = 0
+    strList = []
+    while True:
+        # 取长度位
+        length = int(tempStr[index])
+        # 取数字字符串
+        s = tempStr[index + 1:index + 1 + length]
+        # 加入到列表中
+        strList.append(s)
+        # 增加偏移量
+        index += 1 + length
+        # 退出条件
+        if index >= len(tempStr):
+            break
+    data = bytearray(len(strList))
+    for i in range(len(data)):
+        data[i] = int(strList[i])
+    return data.decode('utf-8')
+
+def judge(x,y):
+    if x<y:
+        return encrypt(x)+"-"+encrypt(y)
     else:
-        loggedIn = True
-        sql = "SELECT user_name FROM chatroom.users WHERE email = %s"
-        params = [session['email']]
-        userName = query.query(sql,params)
-        session['user'] = userName[0][0]
-    return (loggedIn, userName[0][0])
-
-
-#判断账户密码是否匹配
-def is_valid(email, password):
-    sql = 'SELECT email, password FROM chatroom.users'
-    data =query.query_no(sql)
-    for row in data:
-        if row[0] == email and row[1] == hashlib.md5(password.encode()).hexdigest():
-            return True
-    return False
-
-#登录
-@chatroom.route("/", methods = ['POST', 'GET'])
-@chatroom.route("/login", methods = ['POST', 'GET'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        print(email)
-        print(password)
-        user_socket = request.environ.get('wsgi.websocket')
-        user_dict[email] = user_socket
-        if is_valid(email, str(password)):
-            session['email'] = email
-            flash('登录成功')
-            return redirect(url_for('index'))
-        else:
-            error = 'Invalid UserId / Password'
-            flash('登录失败')
-            return render_template('login.html', error=error)
-    else:
-        flash('登录失败')
-        return render_template('login.html')
-
-@chatroom.route("/logout")
-def logout():
-    session.pop('email', None)
-    return redirect(url_for('login'))
-
-
-@chatroom.route("/register", methods = ['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        #Parse form data
-        password = request.form['password']
-        email = request.form['email']
-        name = request.form['name']
-        if is_valid(email, password):
-            flash('账号已存在，请登录')
-            return render_template("login.html")
-        else:
-            Ino = gengenerateID()
-            sql = "select * from Issue where Ino = '%s'" % Ino
-            params=[Ino]
-            result=query.query(sql,params)
-            # 如果result不为空，即存在该ID，就一直生成128位随机ID,直到不重复位置
-            while result is not None:
-                Ino = gengenerateID()
-                sql = "select * from Issue where Ino = '%s'" % Ino
-                params = [Ino]
-                result = query.query(sql, params)
-            sql = 'INSERT INTO chatroom.users (user_id,email,password,user_name,avatar_url) VALUES (%s,%s,%s,%s,%s)'
-            params = [Ino,email,hashlib.md5(password.encode()).hexdigest(),name,'/static/images/001.jpg']
-            msg = query.update(sql,params)
-            if msg == 'Changed successfully':
-                flash('注册成功')
-                return render_template("login.html")
-            else:
-                flash('注册失败')
-                return render_template('register.html')
-    else:
-        return render_template('register.html')
-
-
-@chatroom.route("/index", methods = ['POST', 'GET'])
-def index():
-    if 'email' not in session:
-        return redirect(url_for('login'))
-    else:
-        loggedIn, userName = getLoginDetails()
-        sql = "SELECT avatar_url FROM chatroom.users WHERE email = %s"#获取头像
-        params = [session['email']]
-        avatar_url = query.query(sql, params)
-        sql = "SELECT user_name,users.avatar_url,users.email,users.user_id FROM chatroom.users" #获取用户名
-        users = query.query_no(sql)
-        sql = "SELECT user_id FROM chatroom.users WHERE email = %s"  # 获取头像
-        params = [session['email']]
-        id1 = query.query(sql, params)
-        print(id1)
-        return render_template("index.html",userName = userName,avatar_url=avatar_url[0][0],users = users,id1=id1[0][0])
-
-@chatroom.route("/chatroom", methods = ['POST', 'GET'])
-def chatroom():
-    if 'email' not in session:
-        return redirect(url_for('login'))
-    else:
-        loggedIn, userName = getLoginDetails()
-        sql = "SELECT messages.content,messages.create_time,users.user_name,users.avatar_url,messages.user_id FROM chatroom.messages,chatroom.users where messages.user_id = users.user_id and messages.chatroom_name='chatroom' order by messages.create_time"
-        message = query.query_no(sql)
-        sql = "SELECT user_name,users.avatar_url FROM chatroom.users"
-        users = query.query_no(sql)
-        sql = "SELECT avatar_url FROM chatroom.users WHERE email = %s"
-        params = [session['email']]
-        avatar_url = query.query(sql, params)
-        return render_template("chatroom.html",userName = userName,message = message,users = users,avatar_url = avatar_url)
+        return encrypt(y)+"-"+encrypt(x)
 
 # 私聊
-@chatroom.route("/private/<Ino>", methods = ['POST', 'GET'])
-def private(Ino):
-    if 'email' not in session:
-        return redirect(url_for('login'))
-    else:
-        t=str(Ino).split('-')
-        print(t)
-        Ino='/private/'+Ino
-        loggedIn, userName = getLoginDetails()
-        sql = "SELECT messages.content,messages.create_time,users.user_name,users.avatar_url,messages.user_id FROM chatroom.messages,chatroom.users where messages.user_id = users.user_id and messages.chatroom_name='%s' order by messages.create_time" % Ino
-        message = query.query_no(sql)
-        sql = "SELECT user_name,users.avatar_url FROM chatroom.users WHERE user_id='%s' or user_id='%s'" % (t[0],t[1])
-        users = query.query_no(sql)
-        print(users)
-        sql = "SELECT avatar_url FROM chatroom.users WHERE email = %s"
-        params = [session['email']]
-        avatar_url = query.query(sql, params)
-        return render_template("profile.html",userName = userName,message = message,users = users,avatar_url = avatar_url)
+@chatroom.route("/private", methods=['POST'])
+@login_limit
+def private():
+    user1=request.form.get('user1')
+    user2=request.form.get('user2')
+    print(user1,user2)
+    users=[]
+    room=judge(user1,user2)
+    print(room)
+    str1 = UserInformation.query.filter_by(email=user1).first()
+    userName=str1.nickname
+    avatar_url=str1.photo
+    users.append(str1)
+    str2 = UserInformation.query.filter_by(email=user2).first()
+    users.append(str2)
+    message = Messages.query.filter(Messages.chatroom_name == room).order_by(Messages.create_time.desc()).all()
+    print(message)
+    return render_template("chatroom.html", userName=userName, message=message, users=users, avatar_url=avatar_url,room=str(room))
 
 
+# 连接主页
 
-
-
-#连接主页
-@socketio.on('Iconnect', namespace='/index')
-def Iconnect():
-    print('连接主页成功')
-
-#接收更换的头像的路径
-@socketio.on('avatar_url' ,namespace='/index')
-def avatar_url(information):
-    email = session['email']
-    avatar_url = information.get('avatar_url')
-    sql = "UPDATE chatroom.users SET avatar_url = %s WHERE email = %s "
-    params = [avatar_url,email]
-    msg = query.update(sql, params)
-    print(msg)
 
 class MyCustomNamespace(Namespace):
     def on_connect(self):
         print('连接成功')
 
-    def on_joined(self,information):
+    def on_joined(self, information):
         # 'joined'路由是传入一个room_name,给该websocket连接分配房间,返回一个'status'路由
         room_name = information
-        user_name = session.get('user')
+        user_name = session.get('email')
         print(information)
         print("加入房间成功")
         join_room(room_name)
@@ -187,9 +103,9 @@ class MyCustomNamespace(Namespace):
         print(user_dict1)
         emit('status', {'server_to_client': user_name + ' enter the room'}, room=room_name)
 
-    def on_leave(self,information):
+    def on_leave(self, information):
         room_name = information
-        user_name = session.get('user')
+        user_name = session.get('email')
         print(information)
         print("退出房间成功")
         leave_room(room_name)
@@ -197,33 +113,27 @@ class MyCustomNamespace(Namespace):
         print(user_dict1)
         emit('status', {'server_to_client': user_name + ' leave the room'}, room=room_name)
 
-    def on_text(self,information):
+    def on_text(self, information):
         print('接受成功1')
         text = information.get('text')
-        user_name = session.get('user')  # 获取用户名称
+        user_name = session.get('email')  # 获取用户名称
         chatroom_name = information.get('chatroom')
-        sql = "SELECT user_id FROM chatroom.users WHERE email = %s"
-        params = [session['email']]
-        print(params)
-        user_id = query.query(sql, params)[0]  # 获取用户ID
-        print(user_id)
         create_time = datetime.datetime.now()
         create_time = datetime.datetime.strftime(create_time, '%Y-%m-%d %H:%M:%S')
-        sql = 'INSERT INTO chatroom.messages (chatroom_name,content,user_id,create_time) VALUES (%s,%s,%s,%s)'
-        params = [chatroom_name, text, user_id, create_time]
-        query.update(sql, params)  # 将聊天信息插入数据库，更新数据库
-        sql = "SELECT avatar_url FROM chatroom.users WHERE email = %s"
-        params = [session['email']]
-        avatar_url = query.query(sql, params)  # 获取用户头像
+        inf = Messages(chatroom_name=chatroom_name,user=user_name,content=text,create_time=create_time)
+        db2.session.add(inf)
+        db2.session.commit()
+        str1 = UserInformation.query.filter_by(email=user_name).first()
         # 返回聊天信息给前端
         emit('message', {
             'user_name': user_name,
             'text': text,
             'create_time': create_time,
-            'avatar_url': avatar_url,
+            'avatar_url': str1.photo,
         }, broadcast=True)
-socketio.on_namespace(MyCustomNamespace('/chatroom'))
 
-if __name__ == '__main__':
-    #app.run(debug=True, use_reloader=False)
-    socketio.run(chatroom)
+
+# socketio.on_namespace(MyCustomNamespace('/chatroom'))
+
+
+

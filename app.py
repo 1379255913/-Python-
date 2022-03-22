@@ -1,4 +1,7 @@
-import requests
+import gevent
+from gevent import monkey
+monkey.patch_all()
+from flask_socketio import SocketIO
 from flask import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -14,7 +17,9 @@ from uploader import Uploader
 from page_utils import Pagination
 from databank import db as db2
 from mail import mail
+from Socket_io import socketio
 from databank import Confirm,UserInformation
+
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 path_photo = '/static/img/None.jpg'
@@ -22,10 +27,15 @@ path_photo = '/static/img/None.jpg'
 app.config.from_object(config)
 db2.init_app(app)
 mail.init_app(app)
+socketio = SocketIO(cors_allowed_origins="*")
+socketio.init_app(app)
 from Background import admin
 app.register_blueprint(admin)
 from Sendemail import email
 app.register_blueprint(email)
+from chatroom import chatroom, MyCustomNamespace
+
+app.register_blueprint(chatroom)
 
 # 登录状态保持
 @app.context_processor
@@ -152,6 +162,7 @@ def email_confirm():
             return render_template('email_confirm.html')
         inf = UserInformation.query.filter_by(email=email).first()
         inf.password=generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
+        db2.session.commit()
         print("OK")
         return redirect(url_for(('index')))
 
@@ -287,9 +298,6 @@ def shop():
             cur.execute(sql)
             issue_information = list(cur.fetchall())
             cur.close()
-            for i in range(len(issue_information)):
-                issue_information[i] = list(issue_information[i])
-                issue_information[i][4] = '-'.join(issue_information[i][4].split('@'))
             pager_obj = Pagination(request.args.get("page", 1), len(issue_information), request.path, request.args,
                                    per_page_count=10,
                                    max_pager_count=11)
@@ -513,6 +521,7 @@ def orderdata(Ino):
                     cur.execute(sql)
                     horseman_name = cur.fetchone()
                     p.append(p[6])
+                    print(p[8])
                     p[6] = str(horseman_name[0])
                 if p[5] == "True" and type1 == 2:
                     sql = "select money_horse from ordermoney where email = '%s' and submit_time='%s'" % (p[0], p[3])
@@ -731,13 +740,13 @@ def create_food():
         type1 = request.form.get('type1')
         if not all([new_name, new_price, new_photo, new_info, type1]):
             flash("信息填写不全！")
-            return render_template('create_food.html')
+            return redirect(url_for('create_food'))
         if not allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
             flash("上传照片格式错误！")
-            return render_template('create_food.html')
-        if not allowed_file(new_movie.filename) in ALLOWED_EXTENSIONS2:
+            return redirect(url_for('create_food'))
+        if new_movie.filename and not allowed_file(new_movie.filename) in ALLOWED_EXTENSIONS2:
             flash("上传视频格式错误！")
-            return render_template('create_food.html')
+            return redirect(url_for('create_food'))
         try:
             new_price = round(float(new_price), 2)
         except:
@@ -1158,6 +1167,6 @@ def upload():
 
 
 
-
+socketio.on_namespace(MyCustomNamespace('/chatroom'))
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app)

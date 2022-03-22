@@ -10,7 +10,7 @@
 
 {% block content %}
 <video  controls="controls">
-  <source src="'http://127.0.0.1:5000/'+{{ movie }}" type="video/mp4" />
+  <source src="{{ movie }}" type="video/mp4" />
 </video>
 {% endblock %}
 {% block index_class %}

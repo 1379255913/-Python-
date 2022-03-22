@@ -17,6 +17,32 @@
     </div>
     <script type="text/javascript">
         var i = 0;
+        function httpPost(URL, PARAMS) {
+         var temp = document.createElement("form");
+         temp.action = URL;
+         temp.method = "post";
+         temp.style.display = "none";
+
+         for (var x in PARAMS) {
+          var opt = document.createElement("textarea");
+          opt.name = x;
+          opt.value = PARAMS[x];
+          temp.appendChild(opt);
+         }
+
+         document.body.appendChild(temp);
+         temp.submit();
+
+         return temp;
+        }
+        function private_send(obj){
+            console.log(obj)
+            var params = {
+          "user1": "{{ email|safe }}",
+          "user2": obj,
+         };
+         httpPost("/chatroom/private", params);
+        }
         function addInput(t,z,z1) {
             //使用DOM的创建元素方法
             var o = document.createElement("input");
@@ -177,13 +203,14 @@
                             {% if issue[6] and type!=2 %}
                             <br/>
                             <page class="page1">
-                                    <a href="{{ url_for('personal',Ino=issue[7]) }}">骑手：{{ issue[6] }}</a>
+                                    <a href="{{ url_for('personal',Ino=issue[8]) }}">骑手：{{ issue[6] }}</a>
+                                    <button type="button" class="btn btn-default" onclick="private_send('{{ issue[8] }}')">私聊</button>
                             </page>
                             {% endif %}
-                            {% if issue[8] %}
+                            {% if issue[9] %}
                             <br/>
                             <page class="page1">
-                                    本单收入：{{ issue[8] }}
+                                    本单收入：{{ issue[9] }}
                             </page>
                             {% endif %}
                         </div>

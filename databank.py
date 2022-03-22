@@ -40,6 +40,22 @@ class Confirm(db.Model):
 
 
 
+class Messages(db.Model):
+    __tablename__ = "messages"
+
+    chatroom_name = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.String(255))
+    create_time = db.Column(db.DateTime, nullable=False)
+    user = db.Column(db.String(50),db.ForeignKey('userinformation.email'), nullable=False)
+    id = db.Column(db.Integer,primary_key=True)
+
+
+    # 相当于__str__方法。
+    def __repr__(self):
+        return "Role: %s %s %s %s %s %s" % (self.chatroom_name, self.content, self.create_time,self.user,self.id,self.userinformation.nickname)
+
+
+
 
 class UserInformation(db.Model):
     __tablename__ = "userinformation"
@@ -55,6 +71,7 @@ class UserInformation(db.Model):
     photo = db.Column(db.String(255))
     children1 = db.relationship("ShopData", backref="userinformation")
     children2 = db.relationship("ShopType", backref="userinformation")
+    children3 = db.relationship("Messages", backref="userinformation")
     def __repr__(self):
         return "Role: %s %s %s %s %s %s %s %s %s " % (
         self.email, self.nickname, self.password, self.type, self.create_time, self.phone, self.address,
