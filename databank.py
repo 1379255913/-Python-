@@ -55,6 +55,13 @@ class Messages(db.Model):
         return "Role: %s %s %s %s %s %s" % (self.chatroom_name, self.content, self.create_time,self.user,self.id,self.userinformation.nickname)
 
 
+class Shoptags(db.Model):
+    __tablename__ = "shoptags"
+    email = db.Column(db.String(128), nullable=False)
+    tag = db.Column(db.String(30), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    def __repr__(self):
+        return "Role: %s %s %s" % (self.email, self.tag, self.id)
 
 
 class UserInformation(db.Model):
@@ -69,13 +76,14 @@ class UserInformation(db.Model):
     address = db.Column(db.String(255))
     information = db.Column(db.String(255))
     photo = db.Column(db.String(255))
+    num = db.Column(db.Integer)
     children1 = db.relationship("ShopData", backref="userinformation")
     children2 = db.relationship("ShopType", backref="userinformation")
     children3 = db.relationship("Messages", backref="userinformation")
     def __repr__(self):
-        return "Role: %s %s %s %s %s %s %s %s %s " % (
+        return "Role: %s %s %s %s %s %s %s %s %s %s" % (
         self.email, self.nickname, self.password, self.type, self.create_time, self.phone, self.address,
-        self.information, self.photo)
+        self.information, self.photo, self.num)
 
 
 class ShopType(db.Model):

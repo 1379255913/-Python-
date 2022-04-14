@@ -80,7 +80,7 @@ def private():
     users.append(str1)
     str2 = UserInformation.query.filter_by(email=user2).first()
     users.append(str2)
-    message = Messages.query.filter(Messages.chatroom_name == room).order_by(Messages.create_time.desc()).all()
+    message = Messages.query.filter(Messages.chatroom_name == room).order_by(Messages.create_time).all()
     print(message)
     return render_template("chatroom.html", userName=userName, message=message, users=users, avatar_url=avatar_url,room=str(room))
 
@@ -96,8 +96,7 @@ class MyCustomNamespace(Namespace):
         # 'joined'路由是传入一个room_name,给该websocket连接分配房间,返回一个'status'路由
         room_name = information
         user_name = session.get('email')
-        print(information)
-        print("加入房间成功")
+        print(user_name,"加入房间成功")
         join_room(room_name)
         user_dict1[user_name] = room_name
         print(user_dict1)
@@ -106,15 +105,14 @@ class MyCustomNamespace(Namespace):
     def on_leave(self, information):
         room_name = information
         user_name = session.get('email')
-        print(information)
-        print("退出房间成功")
+        print(user_name,"退出房间成功")
         leave_room(room_name)
         user_dict1.pop(user_name)
         print(user_dict1)
         emit('status', {'server_to_client': user_name + ' leave the room'}, room=room_name)
 
     def on_text(self, information):
-        print('接受成功1')
+        print('接受成功')
         text = information.get('text')
         user_name = session.get('email')  # 获取用户名称
         chatroom_name = information.get('chatroom')
@@ -133,7 +131,7 @@ class MyCustomNamespace(Namespace):
         }, broadcast=True)
 
 
-# socketio.on_namespace(MyCustomNamespace('/chatroom'))
+socketio.on_namespace(MyCustomNamespace('/chatroom'))
 
 
 

@@ -42,6 +42,9 @@
         <h1>商家列表</h1>
     </div>
     <div class="issue_list_div">
+        {% if ifsearch %}
+            <div style="font-size: large">查询:{{ifsearch}}</div>
+        {% endif %}
         <ul class="issue_list_ul">
             {% for issue in issue_information %}
                 <li class="issue_list_li">
@@ -77,6 +80,7 @@
                             <page class="page1">
                                 {{ issue[1] }}
                             </page>
+                            <div style="float:right;font-size: 20px;">销量:{{issue[5]}}</div>
                             <br/>
                         </div>
                     </div>

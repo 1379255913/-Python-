@@ -293,7 +293,16 @@ def shop():
     if request.method == 'GET':
         try:
             cur = db.cursor()
-            sql = "select nickname, address, information, photo, email from UserInformation where type = '%s'" % '1'
+            sql = "select shop,COUNT(shop) AS shopnum from orderdata GROUP BY shop"
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            num=cur.fetchall()
+            for item in num:
+                sql="UPDATE UserInformation SET num='%s' where email = '%s'" % (item[1], item[0])
+                db.ping(reconnect=True)
+                cur.execute(sql)
+            db.commit()
+            sql = "select nickname, address, information, photo, email,num from UserInformation where type = '%s' ORDER BY num DESC" % '1'
             db.ping(reconnect=True)
             cur.execute(sql)
             issue_information = list(cur.fetchall())
@@ -521,7 +530,6 @@ def orderdata(Ino):
                     cur.execute(sql)
                     horseman_name = cur.fetchone()
                     p.append(p[6])
-                    print(p[8])
                     p[6] = str(horseman_name[0])
                 if p[5] == "True" and type1 == 2:
                     sql = "select money_horse from ordermoney where email = '%s' and submit_time='%s'" % (p[0], p[3])
@@ -607,7 +615,6 @@ def personal(Ino):
             db.ping(reconnect=True)
             cur.execute(sql)
             flag = cur.fetchone()
-            print(flag)
         except Exception as e:
             raise e
         return render_template('personal.html', personal_info=personal_info, follow_email=Ino, flag=flag, email_2=Ino)
@@ -674,23 +681,33 @@ def create_uuid():  # 生成唯一的图片的名称字符串，防止图片显�
 def change_info():
     if request.method == 'GET':
         email = session.get('email')
+        tags=""
         try:
             cur = db.cursor()
             sql = "select nickname, phone, address, information from UserInformation where email = '%s'" % email
             db.ping(reconnect=True)
             cur.execute(sql)
             personal_info = cur.fetchone()
+            sql = "select tag from shoptags where email = '%s'" % email
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            tuple1=cur.fetchall()
+            for item in tuple1:
+                tags+=item[0]
         except Exception as e:
             raise e
-        return render_template('change_info.html', personal_info=personal_info)
+        return render_template('change_info.html', personal_info=personal_info,tags=tags)
     if request.method == 'POST':
         new_nickname = request.form.get('new_nickname')
         new_phone = request.form.get('new_phone')
         new_address = request.form.get('new_address')
         new_info = request.form.get('new_info')
         new_photo = request.files.get('new_photo')
+        new_tags=""
+        if str(session.get("type"))=='1': new_tags=request.form.get('tags')
         if not all([new_nickname, new_phone, new_address, new_info]):
             flash("信息填写不全！")
+            return redirect(url_for('change_info'))
         email = session.get('email')
         try:
             cur = db.cursor()
@@ -713,6 +730,17 @@ def change_info():
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
+            if new_tags:
+                list1=new_tags.split("-")
+                sql = "delete from shoptags where email = '%s'" % email
+                db.ping(reconnect=True)
+                cur.execute(sql)
+                db.commit()
+                for item in list1:
+                    sql = "insert into shoptags(email,tag) VALUES ('%s','%s')" % (email,item)
+                    db.ping(reconnect=True)
+                    cur.execute(sql)
+                    db.commit()
             cur.close()
             return redirect(url_for('index'))
         except Exception as e:
@@ -858,66 +886,66 @@ def gengenerateFno():
     return re
 
 
-# 资源上传页面
-@app.route('/post_file', methods=['GET', 'POST'])
-@login_limit
-def post_file():
-    if request.method == 'GET':
-        return render_template('post_file.html')
-    if request.method == 'POST':
-        email = session.get('email')
-        upload_file = request.files.get('file')
-        filename = request.form.get('filename')
-        file_info = request.form.get('file_info')
-        file_path = 'store'
-        file_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        Fno = gengenerateFno()
-        try:
-            cur = db.cursor()
-            sql = "select * from Files where Fno = '%s'" % Fno
-            db.ping(reconnect=True)
-            cur.execute(sql)
-            result = cur.fetchone()
-            # 如果result不为空，即该Fno已存在时，一直生成随机的Fno，只到该数据库中不存在
-            while result is not None:
-                Fno = gengenerateFno()
-                sql = "select * from Files where Fno = '%s'" % Fno
-                db.ping(reconnect=True)
-                cur.execute(sql)
-                result = cur.fetchone()
-            # 获取文件的后缀
-            upload_name = str(upload_file.filename)
-            houzhui = upload_name.split('.')[-1]
-            # 保存在本地的名字为生成的Fno+文件后缀，同时修改Fno的值
-            Fno = Fno + "." + houzhui
-            # 保存文件到我们的服务器中
-            upload_file.save(os.path.join(file_path, Fno))
-            # 将文件信息存储到数据库中
-            sql = "insert into Files(Fno, filename, file_info, file_time,email) VALUES ('%s','%s','%s','%s','%s')" % (
-            Fno, filename, file_info, file_time, email)
-            db.ping(reconnect=True)
-            cur.execute(sql)
-            db.commit()
-            cur.close()
-            return redirect(url_for('source'))
-        except Exception as e:
-            raise e
-
-
-# 资源专区
-@app.route('/source')
-def source():
-    if request.method == 'GET':
-        try:
-            cur = db.cursor()
-            sql = "select Fno,filename,file_info,file_time,nickname from Files,UserInformation where Files.email = UserInformation.email"
-            db.ping(reconnect=True)
-            cur.execute(sql)
-            files = cur.fetchall()
-            cur.close()
-            return render_template('source.html', files=files)
-        except Exception as e:
-            raise e
+# # 资源上传页面
+# @app.route('/post_file', methods=['GET', 'POST'])
+# @login_limit
+# def post_file():
+#     if request.method == 'GET':
+#         return render_template('post_file.html')
+#     if request.method == 'POST':
+#         email = session.get('email')
+#         upload_file = request.files.get('file')
+#         filename = request.form.get('filename')
+#         file_info = request.form.get('file_info')
+#         file_path = 'store'
+#         file_time = time.strftime("%Y-%m-%d %H:%M:%S")
+#         Fno = gengenerateFno()
+#         try:
+#             cur = db.cursor()
+#             sql = "select * from Files where Fno = '%s'" % Fno
+#             db.ping(reconnect=True)
+#             cur.execute(sql)
+#             result = cur.fetchone()
+#             # 如果result不为空，即该Fno已存在时，一直生成随机的Fno，只到该数据库中不存在
+#             while result is not None:
+#                 Fno = gengenerateFno()
+#                 sql = "select * from Files where Fno = '%s'" % Fno
+#                 db.ping(reconnect=True)
+#                 cur.execute(sql)
+#                 result = cur.fetchone()
+#             # 获取文件的后缀
+#             upload_name = str(upload_file.filename)
+#             houzhui = upload_name.split('.')[-1]
+#             # 保存在本地的名字为生成的Fno+文件后缀，同时修改Fno的值
+#             Fno = Fno + "." + houzhui
+#             # 保存文件到我们的服务器中
+#             upload_file.save(os.path.join(file_path, Fno))
+#             # 将文件信息存储到数据库中
+#             sql = "insert into Files(Fno, filename, file_info, file_time,email) VALUES ('%s','%s','%s','%s','%s')" % (
+#             Fno, filename, file_info, file_time, email)
+#             db.ping(reconnect=True)
+#             cur.execute(sql)
+#             db.commit()
+#             cur.close()
+#             return redirect(url_for('source'))
+#         except Exception as e:
+#             raise e
+#
+#
+# # 资源专区
+# @app.route('/source')
+# def source():
+#     if request.method == 'GET':
+#         try:
+#             cur = db.cursor()
+#             sql = "select Fno,filename,file_info,file_time,nickname from Files,UserInformation where Files.email = UserInformation.email"
+#             db.ping(reconnect=True)
+#             cur.execute(sql)
+#             files = cur.fetchall()
+#             cur.close()
+#             return render_template('source.html', files=files)
+#         except Exception as e:
+#             raise e
 
 
 # 点赞
@@ -925,10 +953,8 @@ def source():
 @login_limit
 def like(Ino):
     t = Ino.split('-')
-    print(t)
     cur = db.cursor()
     sql = "select judge from likes where email = '%s' and shop_email = '%s' and food = '%s'" % (t[0], t[1], t[2])
-    print(sql)
     db.ping(reconnect=True)
     cur.execute(sql)
     result = cur.fetchone()
@@ -936,14 +962,12 @@ def like(Ino):
         if not result:
             sql = "insert into likes(email, shop_email, food, judge) VALUES ('%s','%s','%s','%s')" % (
             t[0], t[1], t[2], True)
-            print(sql)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
             cur.close()
         else:
             sql = "DELETE FROM likes WHERE email = '%s' and shop_email = '%s' and food = '%s'" % (t[0], t[1], t[2])
-            print(sql)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
@@ -989,7 +1013,6 @@ def follow():
     t=[]
     t.append(request.form.get('email'))
     t.append(request.form.get('follow_email'))
-    print(t)
     cur = db.cursor()
     sql = "select * from follow where email = '%s' and follow_email = '%s'" % (t[0], t[1])
     db.ping(reconnect=True)
@@ -1015,12 +1038,16 @@ def follow():
 
 
 # 商家查询
-@app.route('/search_ans/<Ino>', methods=['POST','GET'])
+@app.route('/search_ans/<path:Ino>/<int:value>', methods=['POST','GET'])
 @login_limit
-def search_ans(Ino):
+def search_ans(Ino,value):
     try:
+        sql=""
         cur = db.cursor()
-        sql = "select nickname, address, information, photo, email from UserInformation where type = '%s' and nickname like '%%%s%%'" % ('1',Ino)
+        if str(value)=="0":
+            sql = "select nickname, address, information, photo, email from UserInformation where type = '%s' and nickname like '%%%s%%'" % ('1',Ino)
+        elif str(value)=="1":
+            sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email from userinformation,shopdata where  shopdata.title like '%%%s%%' and shopdata.email=userinformation.email" % Ino
         db.ping(reconnect=True)
         cur.execute(sql)
         issue_information = list(cur.fetchall())
@@ -1033,21 +1060,22 @@ def search_ans(Ino):
                                max_pager_count=11)
         index_list = issue_information[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
-        return render_template('shop.html', issue_information=index_list, html=html)
+        return render_template('shop.html', issue_information=index_list, html=html, ifsearch=Ino)
     except Exception as e:
         raise e
 
 
-# 在线查看文件
-@app.route('/online_file/<Fno>')
-def online_file(Fno):
-    return send_from_directory(os.path.join('store'), Fno)
 
-
-# 文件下载功能
-@app.route('/download/<Fno>')
-def download(Fno):
-    return send_file(os.path.join('store') + "/" + Fno, as_attachment=True)
+# # 在线查看文件
+# @app.route('/online_file/<Fno>')
+# def online_file(Fno):
+#     return send_from_directory(os.path.join('store'), Fno)
+#
+#
+# # 文件下载功能
+# @app.route('/download/<Fno>')
+# def download(Fno):
+#     return send_file(os.path.join('store') + "/" + Fno, as_attachment=True)
 
 
 # 富文本编辑器后台配置

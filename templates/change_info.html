@@ -6,6 +6,46 @@
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/change_password.css">
+
+<script>
+    var taglist=["早餐","午餐","晚餐","夜宵","水果","药品","超市"];
+    function addtags(t){
+        console.log(t);
+        console.log("zhixing")
+        var k = document.getElementById("tags");
+        for (var i = 0; i < taglist.length; i++){
+            var j = document.createElement("input");
+            j.type = "checkbox";
+            j.name = taglist[i];
+            j.id ="check"+i;
+            if (t.indexOf(taglist[i])!==-1){
+                j.checked = true;
+            }else{
+                j.checked = false;
+            }
+            var o = document.createElement("label");
+            o.innerText='\xa0\xa0\xa0\xa0\xa0'+taglist[i]  ;
+            o.style="font-size:large";
+            o.id="label"+i;
+            o.for=taglist[i];
+            k.appendChild(o);
+            o.appendChild(j);
+        }
+    }
+    function to_submit() {
+        var ans=[]
+        for (var i = 0; i < taglist.length; i++){
+            var o=document.getElementById("check"+i);
+            if (o.checked===true){
+                console.log(taglist[i]);
+                ans.push(taglist[i])
+        }
+    }
+        console.log(ans.join("-"));
+        document.getElementById("tags2").value=ans.join("-");
+        document.getElementById("form1").submit();
+    }
+</script>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +54,7 @@
       <h1>修改信息<small>Change Information</small></h1>
     </div>
     <div class="change_password_div">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="form1">
             <span style=" font-size:20px;color: red" >
                 {% for item in get_flashed_messages() %}
                 {{ item }}
@@ -48,9 +88,19 @@
                 <label for="exampleInputPassword1">上传新图片：</label>
             <input type="file" size="30" name="new_photo"/>
             </div>
+            {% if type == 1 %}
+            <div>
+                <label for="exampleInputPassword1">标签：</label>
+            <div id="tags"></div>
+                <script>
+                    addtags("{{ tags|safe }}")
+                </script>
+            </div>
+            {% endif %}
+            <input type="hidden" id="tags2" name="tags">
             <br/>
             <div id="info_butt">
-              <button type="submit" class="btn btn-default">修改信息</button>
+              <button type="button" class="btn btn-default" onclick="to_submit()">修改信息</button>
           </div>
         </form>
     </div>
