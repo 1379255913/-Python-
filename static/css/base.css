@@ -1,3 +1,13 @@
 .navigation_bar{
     height: 52px;
 }
+
+.box{
+	  position: relative;
+	  width: 100%;
+	  z-index: 999;
+	}
+.box-active{
+  position: fixed;
+  top: 0;
+}

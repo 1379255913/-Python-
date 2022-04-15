@@ -16,9 +16,11 @@
     <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="navigation_bar">
+{% block top %}
+    <div class="navigation_bar box">
+{% endblock %}
         <nav class="navbar navbar-default">
-          <div class="container-fluid">
+          <div class="container-fluid" >
 {#              由于这里我们不需要使用商标，所以对Bran部分进行了删除#}
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -34,6 +36,7 @@
                 <select class="col-lg-6 form-control" name="type_food" id="search_select">
                 <option value="0">商家</option>
                 <option value="1">商品</option>
+                <option value="2">标签</option>
                 </select>
                 <input type="button" class="btn btn-default" value="查询" onclick="search_button(this)">
               </form>
@@ -51,7 +54,7 @@
                         <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
                         <li><a href="{{ url_for('my_fav') }}">我的收藏</a></li>
                         <li><a href="{{ url_for('my_follow') }}">我的关注</a></li>
-                        <li><a href="#">我的好友</a></li>
+                        <li><a href="{{ url_for('messages.messages_index') }}">消息中心</a></li>
                         <li><a href="{{ url_for('shop') }}">点餐</a></li>
                       </ul>
                     </li>
@@ -67,7 +70,7 @@
                         <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
                         <li><a href="{{ url_for('create_food') }}">创建菜品</a></li>
                         <li><a href="{{ url_for('change_type') }}">编辑菜品类型</a></li>
-                        <li><a href="#">我的好友</a></li>
+                        <li><a href="{{ url_for('messages.messages_index') }}">消息中心</a></li>
                       </ul>
                     </li>
                 {% elif type == 2 %}
@@ -79,7 +82,7 @@
                         <li><a href="{{ url_for('change_info') }}">修改骑手信息</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="{{ url_for('orderdata',Ino=email) }}">我的订单</a></li>
-                        <li><a href="#">我的好友</a></li>
+                        <li><a href="{{ url_for('messages.messages_index') }}">消息中心</a></li>
                       </ul>
                     </li>
                 {% endif %}
@@ -112,6 +115,15 @@
         }
 
     }
+
+ window.addEventListener('scroll', function(){
+ 	let t = $('body, html').scrollTop();   // 目前监听的是整个body的滚动条距离
+ 	if(t>0){
+		$('.box').addClass('box-active')
+	}else{
+		$('.box').removeClass('box-active')
+	}
+ })
 </script>
 </body>
 </html>

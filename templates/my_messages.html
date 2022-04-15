@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-我的关注
+消息中心
 {% endblock %}
 
 {% block css %}
@@ -12,19 +12,26 @@
 {% block content %}
 <div class="personal_content">
     <div class="page-header" id="page_header">
-      <h1 id="test">我的关注<small>My favorite</small></h1>
-        <a href="{{ url_for('my_followed')}}" style="float: right">查看我的粉丝</a>
+      <h1 id="test">消息中心<small>My messages</small></h1>
     </div>
     <div class="personal_info">
-        <table>
+        <table class="table table-striped">
             {% for j in range(follow_list|length) %}
             <tr class="personal_tr">
                 <td class="personal_td">
                     <a href="{{ url_for('personal',Ino=follow_list[j][1]) }}" id="url{{ j }}" name="{{ follow_list[j][1] }}">{{ follow_list[j][0] }}</a>
                 </td>
                 <td class="personal_td">
-                    <input type="button" value="取消关注" id="button{{ j }}" name="{{ j }}" onclick="buttonsend(this)">
                     <input type="button" value="私聊" id="but{{ j }}" name="{{ j }}" onclick="private_send(this)">
+                </td>
+
+            </tr>
+            <tr class="personal_tr">
+                <td>
+                    <label>{{ follow_list[j][2] }}&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                </td>
+                <td>
+                    <label>{{ follow_list[j][3] }}</label>
                 </td>
             </tr>
             {% endfor %}
@@ -39,35 +46,6 @@
 </div>
 <script>
 var ema="{{ email|safe }}";
-function buttonsend(obj) {
-        var ema2= document.getElementById("url"+obj.name).name;
-        if (obj.value=="关注"){
-        obj.value="取消关注";
-        }
-        else{
-        obj.value="关注";
-        }
-        $.ajax({
-        url : "/follow/",
-        type : "POST",
-        data : {
-            'email': ema ,
-            'follow_email': ema2 ,
-        },
-        success : function(result) {
-            console.log(result);
-            if (result)
-            {
-                console.log("success")
-
-            }
-        },
-        error:function(msg){
-            console.log("error:",msg)
-        }
-        })
-
-    }
 //发送POST请求跳转到指定页面
         function httpPost(URL, PARAMS) {
          var temp = document.createElement("form");

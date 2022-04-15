@@ -104,7 +104,11 @@
                                         <div class="message">
                                             <a class="message-author" > {{ row.userinformation.nickname }} </a>
                                             <span class="message-date">  {{ row.create_time }} </span>
+                                            {% if row.photo %}
+                                            <span class="message-content"><img src={{ row.photo }} class='imgchat' style='height: 100px;weight:100px'/>{{ row.content }}</span>
+                                            {% else %}
                                             <span class="message-content">{{ row.content }}</span>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     {% endfor %}
@@ -145,8 +149,8 @@
 <!--                                <option value="&#128530;">&#128530;</option><option value="&#128531;">&#128531;</option><option value="&#128532;">&#128532;</option><option value="&#128533;">&#128533;</option><option value="&#128534;">&#128534;</option><option value="&#128535;">&#128535;</option><option value="&#128536;">&#128536;</option><option value="&#128537;">&#128537;</option><option value="&#128538;">&#128538;</option><option value="&#128539;">&#128539;</option>-->
 <!--                                <option value="&#128540;">&#128540;</option><option value="&#128541;">&#128541;</option><option value="&#128542;">&#128542;</option><option value="&#128543;">&#128543;</option><option value="&#128544;">&#128544;</option><option value="&#128545;">&#128545;</option><option value="&#128546;">&#128546;</option><option value="&#128547;">&#128547;</option><option value="&#128548;">&#128548;</option><option value="&#128549;">&#128549;</option>-->
 <!--                            </select>-->
-<!--                                <button href="#" class="fa fa-file-picture-o " style="margin-top: 12px;margin-left: 12px; border: none;color: orange;background: none" onclick="selectFile();"></button>-->
-<!--                                <input type="file" id="file" onchange="getFilePath()"  style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;"/>-->
+                                <button href="#" class="fa fa-file-picture-o " style="margin-top: 12px;margin-left: 12px; border: none;color: orange;background: none" onclick="selectFile();"></button>
+                                <input type="file" id="file" onchange="getFilePath()"  style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;"/>
 
                                     <div class="form-group">
 
@@ -196,7 +200,8 @@
     var socket;
 
     var current_channel = ''
-
+    var reader = new FileReader();
+    var binaryString=""
     var clear_board = function() {
       $('.enter').val('');
       log('清空')
@@ -221,10 +226,11 @@
             Username = data.user_name
             text = data.text
             create_time = data.create_time
+            photo = data.photo
             var avatar_url = data.avatar_url
             log(Username + ':' + text)
-            if(filepath){
-                 $(".chat-discussion").append("<div class='chat-message left'> <img class='message-avatar' src="+ avatar_url +" alt='' > <div class='message'><a class='message-author' > "+Username+"</a> <span class='message-date'>"+create_time+" </span><span class='message-content'> <img src='"+ filepath+"' class='imgchat' style='height: 100px;weight:100px'/>"+text+"</span> </div> </div>");
+            if(photo){
+                 $(".chat-discussion").append("<div class='chat-message left'> <img class='message-avatar' src="+ avatar_url +" alt='' > <div class='message'><a class='message-author' > "+Username+"</a> <span class='message-date'>"+create_time+" </span><span class='message-content'> <img src='"+ photo+"' class='imgchat' style='height: 100px;weight:100px'/>"+text+"</span> </div> </div>");
                $(".img").attr("src",'');
             }
                 else{
@@ -239,10 +245,12 @@
           if (code == 13) {
               //获取聊天框聊天内容
               var Texttext = $('.enter').val();
+              console.log("12333")
               //清空聊天框
               $('.enter').val('');
               //向后端发送聊天内容
-              socket.emit('text', {'text': Texttext, 'chatroom':chatroom});
+              socket.emit('text', {'text': Texttext, 'chatroom':chatroom, 'photo':binaryString});
+              binaryString="";
           }
       });
     $('#Emoji').change(function() {
@@ -267,9 +275,23 @@
 
             /* 获取 文件的路径 ，用于测试*/
  $("#file").change(function(){
+                 var _name, _fileName, personsFile;
+                personsFile = document.getElementById("file");
+                _name = personsFile.value;
+                _fileName = _name.substring(_name.lastIndexOf(".") + 1).toLowerCase();
+                if (_fileName !== "jpg") {
+                    alert("上传图片格式不为jpg，请重新上传");
+                }
+                else{
              $(".img").attr("src",URL.createObjectURL($(this)[0].files[0]));
-             filepath = URL.createObjectURL($(this)[0].files[0]);
-      console.log(URL.createObjectURL($(this)[0].files[0]))
+             var file = this.files[0];
+             reader.readAsArrayBuffer(file);
+             log("test1")
+             reader.onload = function loaded(evt) {
+                binaryString = evt.target.result;
+                log("接收照片成功")
+        }
+      console.log(URL.createObjectURL($(this)[0].files[0]))}
  })
 </script>
 

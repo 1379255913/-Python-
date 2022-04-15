@@ -1,5 +1,8 @@
 import gevent
 from gevent import monkey
+
+from tools import create_uuid
+
 monkey.patch_all()
 from flask_socketio import SocketIO
 from flask import *
@@ -33,6 +36,8 @@ from Background import admin
 app.register_blueprint(admin)
 from Sendemail import email
 app.register_blueprint(email)
+from messages import messages
+app.register_blueprint(messages)
 from chatroom import chatroom, MyCustomNamespace
 
 app.register_blueprint(chatroom)
@@ -160,10 +165,13 @@ def email_confirm():
         if not confirm==inf.secret:
             flash("验证码错误！")
             return render_template('email_confirm.html')
-        inf = UserInformation.query.filter_by(email=email).first()
-        inf.password=generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
-        db2.session.commit()
-        print("OK")
+        cur = db.cursor()
+        password = generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
+        sql = "update UserInformation set password = '%s' where email = '%s'" % (password, email)
+        db.ping(reconnect=True)
+        cur.execute(sql)
+        db.commit()
+        cur.close()
         return redirect(url_for(('index')))
 
 
@@ -271,6 +279,38 @@ def my_follow():
         return render_template('my_follow.html', follow_list=index_list, html=html)
 
 
+# 我的粉丝
+@app.route('/my_followed')
+@login_limit
+def my_followed():
+    if request.method == 'GET':
+        email = session.get("email")
+        try:
+            ans=[]
+            cur = db.cursor()
+            sql = "select UserInformation.nickname,follow.email from follow,UserInformation where follow.email = UserInformation.email and follow.follow_email = '%s'" % email
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            fav_list = list(cur.fetchall())
+            for item in fav_list:
+                sql = "select others from follow where email='%s' and follow_email = '%s'" % (email,item[1])
+                db.ping(reconnect=True)
+                cur.execute(sql)
+                list1=cur.fetchone()
+                if list1:ans.append(list1)
+                else:ans.append(tuple())
+            pager_obj = Pagination(request.args.get("page", 1), len(fav_list), request.path, request.args,
+                                   per_page_count=10,
+                                   max_pager_count=11)
+            index_list = fav_list[pager_obj.start:pager_obj.end]
+            ans2=ans[pager_obj.start:pager_obj.end]
+            html = pager_obj.page_html()
+        except Exception as e:
+            raise e
+        return render_template('my_followed.html', follow_list=index_list, html=html,iffollow=ans2)
+
+
+
 # 论坛页面
 @app.route('/formula')
 def formula():
@@ -292,6 +332,7 @@ def formula():
 def shop():
     if request.method == 'GET':
         try:
+            tags=[]
             cur = db.cursor()
             sql = "select shop,COUNT(shop) AS shopnum from orderdata GROUP BY shop"
             db.ping(reconnect=True)
@@ -306,13 +347,19 @@ def shop():
             db.ping(reconnect=True)
             cur.execute(sql)
             issue_information = list(cur.fetchall())
+            for item in issue_information:
+                sql = "select tag from shoptags where email='%s'" % item[4]
+                db.ping(reconnect=True)
+                cur.execute(sql)
+                tags.append(cur.fetchall())
             cur.close()
             pager_obj = Pagination(request.args.get("page", 1), len(issue_information), request.path, request.args,
                                    per_page_count=10,
                                    max_pager_count=11)
             index_list = issue_information[pager_obj.start:pager_obj.end]
             html = pager_obj.page_html()
-            return render_template('shop.html', issue_information=index_list, html=html)
+            tag = tags[pager_obj.start:pager_obj.end]
+            return render_template('shop.html', issue_information=index_list, html=html, tags=tag)
         except Exception as e:
             raise e
 
@@ -516,6 +563,7 @@ def orderdata(Ino):
             db.ping(reconnect=True)
             cur.execute(sql)
             order_data = list(cur.fetchall())
+            print(order_data)
             for j in range(len(order_data)):
                 p = list(order_data[j])
                 if type1 == 1: p[2], p[0] = p[0], p[2]
@@ -523,7 +571,7 @@ def orderdata(Ino):
                 db.ping(reconnect=True)
                 cur.execute(sql)
                 shop_name = cur.fetchone()
-                p[2] = str(shop_name).split("'")[1]
+                p[2] = shop_name[0]
                 if p[6]:
                     sql = "select nickname from userinformation where email = '%s'" % p[6]
                     db.ping(reconnect=True)
@@ -538,6 +586,7 @@ def orderdata(Ino):
                     money_horse = cur.fetchone()[0]
                     p.append(money_horse)
                 ans.append(tuple(p))
+            print(ans)
             cur.close()
             ans.reverse()
             pager_obj = Pagination(request.args.get("page", 1), len(ans), request.path, request.args, per_page_count=10,
@@ -666,13 +715,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1]
 
 
-def create_uuid():  # 生成唯一的图片的名称字符串，防止图片显示时的重名问题
-    nowTime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")  # 生成当前时间
-    randomNum = random.randint(0, 100)  # 生成的随机整数n，其中0<=n<=100
-    if randomNum <= 10:
-        randomNum = str(0) + str(randomNum)
-    uniqueNum = str(nowTime) + str(randomNum)
-    return uniqueNum
+
 
 
 # 修改个人信息
@@ -779,6 +822,7 @@ def create_food():
             new_price = round(float(new_price), 2)
         except:
             flash("商品价格错误！")
+            return redirect(url_for("create_food"))
         email = session.get('email')
         try:
             cur = db.cursor()
@@ -1043,24 +1087,30 @@ def follow():
 def search_ans(Ino,value):
     try:
         sql=""
+        tags=[]
         cur = db.cursor()
         if str(value)=="0":
-            sql = "select nickname, address, information, photo, email from UserInformation where type = '%s' and nickname like '%%%s%%'" % ('1',Ino)
+            sql = "select nickname, address, information, photo, email,num from UserInformation where type = '%s' and nickname like '%%%s%%'" % ('1',Ino)
         elif str(value)=="1":
-            sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email from userinformation,shopdata where  shopdata.title like '%%%s%%' and shopdata.email=userinformation.email" % Ino
+            sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email, userinformation.num from userinformation,shopdata where  shopdata.title like '%%%s%%' and shopdata.email=userinformation.email" % Ino
+        elif str(value)=="2":
+            sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email, userinformation.num from userinformation,shoptags where  shoptags.tag = '%s' and shoptags.email=userinformation.email" % Ino
         db.ping(reconnect=True)
         cur.execute(sql)
         issue_information = list(cur.fetchall())
+        for item in issue_information:
+            sql = "select tag from shoptags where email='%s'" % item[4]
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            tags.append(cur.fetchall())
         cur.close()
-        for i in range(len(issue_information)):
-            issue_information[i] = list(issue_information[i])
-            issue_information[i][4] = '-'.join(issue_information[i][4].split('@'))
         pager_obj = Pagination(request.args.get("page", 1), len(issue_information), request.path, request.args,
                                per_page_count=10,
                                max_pager_count=11)
         index_list = issue_information[pager_obj.start:pager_obj.end]
+        tag=tags[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
-        return render_template('shop.html', issue_information=index_list, html=html, ifsearch=Ino)
+        return render_template('shop.html', issue_information=index_list, html=html, ifsearch=Ino, tags=tag)
     except Exception as e:
         raise e
 

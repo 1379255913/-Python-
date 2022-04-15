@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-我的关注
+我的粉丝
 {% endblock %}
 
 {% block css %}
@@ -12,8 +12,8 @@
 {% block content %}
 <div class="personal_content">
     <div class="page-header" id="page_header">
-      <h1 id="test">我的关注<small>My favorite</small></h1>
-        <a href="{{ url_for('my_followed')}}" style="float: right">查看我的粉丝</a>
+      <h1 id="test">我的粉丝<small>My fans</small></h1>
+      <a href="{{ url_for('my_follow')}}" style="float: right">查看我的关注</a>
     </div>
     <div class="personal_info">
         <table>
@@ -23,7 +23,11 @@
                     <a href="{{ url_for('personal',Ino=follow_list[j][1]) }}" id="url{{ j }}" name="{{ follow_list[j][1] }}">{{ follow_list[j][0] }}</a>
                 </td>
                 <td class="personal_td">
+                    {% if iffollow[j] %}
                     <input type="button" value="取消关注" id="button{{ j }}" name="{{ j }}" onclick="buttonsend(this)">
+                    {% else %}
+                    <input type="button" value="关注" id="button{{ j }}" name="{{ j }}" onclick="buttonsend(this)">
+                    {% endif %}
                     <input type="button" value="私聊" id="but{{ j }}" name="{{ j }}" onclick="private_send(this)">
                 </td>
             </tr>

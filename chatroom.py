@@ -9,54 +9,22 @@ import os
 from databank import Messages,UserInformation
 from app import db2, socketio
 from decorators import login_limit
-
+from tools import encrypt,create_uuid
 user_dict1 = {}
 
 chatroom = Blueprint("chatroom", __name__, url_prefix='/chatroom', template_folder='templates')  # 定义模块名字为APP
-
+basedir = os.path.abspath(os.path.dirname(__file__))
 user_dict = {}
 
-# 对字符串加密成整数
-def encrypt(srcStr, password='1938762450'):
-    # 将字符串转换成字节数组
-    data = bytearray(srcStr.encode('utf-8'))
-    # 把每个字节转换成数字字符串
-    strList = [str(byte) for byte in data]
-    # 给每个数字字符串前面加一个长度位
-    strList = [str(len(s)) + s for s in strList]
-    # 进行数字替换
-    for index0 in range(len(strList)):
-        tempStr = ""
-        for index in range(len(strList[index0])):
-            tempStr += password[int(strList[index0][index])]
-        strList[index0] = tempStr
-    return "".join(strList)
 
-# 把整数解密成字符串
-def decrypt(srcStr, password='1938762450'):
-    # 数字替换还原
-    tempStr = ""
-    for index in range(len(srcStr)):
-        tempStr += str(password.find(srcStr[index]))
-    # 去掉长度位，还原成字典
-    index = 0
-    strList = []
-    while True:
-        # 取长度位
-        length = int(tempStr[index])
-        # 取数字字符串
-        s = tempStr[index + 1:index + 1 + length]
-        # 加入到列表中
-        strList.append(s)
-        # 增加偏移量
-        index += 1 + length
-        # 退出条件
-        if index >= len(tempStr):
-            break
-    data = bytearray(len(strList))
-    for i in range(len(data)):
-        data[i] = int(strList[i])
-    return data.decode('utf-8')
+
+
+# def get_ret(s):
+#     new_md5=hashlib.md5()
+#     new_md5.update(s.encode('utf-8'))
+#     ret=new_md5.hexdigest()
+#     return ret
+
 
 def judge(x,y):
     if x<y:
@@ -70,6 +38,7 @@ def judge(x,y):
 def private():
     user1=request.form.get('user1')
     user2=request.form.get('user2')
+    if user1==user2:return redirect(url_for('index'))
     print(user1,user2)
     users=[]
     room=judge(user1,user2)
@@ -118,15 +87,23 @@ class MyCustomNamespace(Namespace):
         chatroom_name = information.get('chatroom')
         create_time = datetime.datetime.now()
         create_time = datetime.datetime.strftime(create_time, '%Y-%m-%d %H:%M:%S')
-        inf = Messages(chatroom_name=chatroom_name,user=user_name,content=text,create_time=create_time)
+        photo = information.get('photo')
+        file_path = ""
+        if photo:
+            print("接收到了图片")
+            file_path = "/static/img/" + create_uuid() + '.jpg'
+            with open(basedir + file_path, 'wb+') as f:
+                f.write(photo)
+        inf = Messages(chatroom_name=chatroom_name,user=user_name,content=text,create_time=create_time,photo=file_path)
         db2.session.add(inf)
         db2.session.commit()
         str1 = UserInformation.query.filter_by(email=user_name).first()
         # 返回聊天信息给前端
         emit('message', {
-            'user_name': user_name,
+            'user_name': str1.nickname,
             'text': text,
             'create_time': create_time,
+            'photo': file_path,
             'avatar_url': str1.photo,
         }, broadcast=True)
 

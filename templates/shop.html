@@ -33,6 +33,10 @@
          };
             httpPost("/chatroom/private", params);
         }
+    function search_tags(obj) {
+        var ans = obj.value;
+        window.location.href = ('/search_ans/'+ans+"/2");
+    }
 </script>
 {% endblock %}
 
@@ -46,41 +50,47 @@
             <div style="font-size: large">查询:{{ifsearch}}</div>
         {% endif %}
         <ul class="issue_list_ul">
-            {% for issue in issue_information %}
+            {% for j in range(issue_information|length) %}
                 <li class="issue_list_li">
-                    <img src="{{ issue[3] }}" width="200" height="200" style="float:left" >
+                    <img src="{{ issue_information[j][3] }}" width="200" height="200" style="float:left" >
                     <div class="issue_div">
                         <div class="issue_content">
                             <h1>
                                 {% if type != 0 and email %}
-                                <a href="{{ url_for('shop_detail',Ino = issue[4]) }}">
-                                    {{ issue[0] }}
+                                <a href="{{ url_for('shop_detail',Ino = issue_information[j][4]) }}">
+                                    {{ issue_information[j][0] }}
                                 </a>
                                 {% elif email %}
-                                <a href="{{ url_for('order',Ino = issue[4]) }}">
-                                    {{ issue[0] }}
+                                <a href="{{ url_for('order',Ino = issue_information[j][4]) }}">
+                                    {{ issue_information[j][0] }}
                                 </a>
                                 {% else %}
-                                <a href="{{ url_for('shop_detail',Ino = issue[4]) }}">
-                                    {{ issue[0] }}
+                                <a href="{{ url_for('shop_detail',Ino = issue_information[j][4]) }}">
+                                    {{ issue_information[j][0] }}
                                 </a>
                                 {% endif %}
-                            <a style="float:right;" href="{{ url_for('show_issue',Ino = issue[4]) }}">
+                            <a style="float:right;" href="{{ url_for('show_issue',Ino = issue_information[j][4]) }}">
                                     查看商家评论
                             </a>
-                            <button type="button" class="btn btn-default" onclick="private_send('{{ issue[4] }}')" style="float:right">私聊</button>
+                            {% if issue_information[j][4]!= email %}
+                            <button type="button" class="btn btn-default" onclick="private_send('{{ issue_information[j][4] }}')" style="float:right">联系商家</button>
+                            {% endif %}
                             </h1>
+                            {% for t in range(tags[j]|length -1, -1, -1) %}
+                            <input type="button" style="float:right;" class="btn btn-default" value="{{tags[j][t][0]}}" onclick="search_tags(this)">
+                            {% endfor %}
+
                             <br/>
                             <br/>
                             <page class="page1">
-                                {{ issue[2] }}
+                                {{ issue_information[j][2] }}
                             </page>
                             <br/>
                             <br/>
                             <page class="page1">
-                                {{ issue[1] }}
+                                {{ issue_information[j][1] }}
                             </page>
-                            <div style="float:right;font-size: 20px;">销量:{{issue[5]}}</div>
+                            <div style="float:right;font-size: 20px;">销量:{{issue_information[j][5]}}</div>
                             <br/>
                         </div>
                     </div>
