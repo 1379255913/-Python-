@@ -15,14 +15,12 @@ import config
 import datetime
 import os
 import re
-from decorators import login_limit
 from uploader import Uploader
 from page_utils import Pagination
 from databank import db as db2
 from mail import mail
 from Socket_io import socketio
 from databank import Confirm,UserInformation
-
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 path_photo = '/static/img/None.jpg'
@@ -38,10 +36,13 @@ from Sendemail import email
 app.register_blueprint(email)
 from messages import messages
 app.register_blueprint(messages)
+from order import order_api
+app.register_blueprint(order_api)
 from chatroom import chatroom, MyCustomNamespace
 
 app.register_blueprint(chatroom)
 
+from decorators import login_limit,ban_comment
 # 登录状态保持
 @app.context_processor
 def login_status():
@@ -68,6 +69,12 @@ def login_status():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+# 禁止访问
+@app.route('/forbid')
+def forbid():
+    return render_template('forbid.html')
 
 
 # 注册页面
@@ -194,6 +201,7 @@ def gengenerateID():
 # 发布评论
 @app.route('/post_issue/<shop>', methods=['GET', 'POST'])
 @login_limit
+@ban_comment
 def post_issue(shop):
     if '@' not in shop:
         shop = '@'.join(shop.split('-'))
@@ -453,8 +461,19 @@ def order(Ino):
         arrive_time = time.strftime("%Y-%m-%d %H:%M:%S", time_tuples)
         try:
             cur = db.cursor()
-            sql = "insert into orderdata(email, information, shop, submit_time, arrive_time, ino) VALUES ('%s','%s','%s','%s','%s','%s')" % (
-                email, information, Ino, submit_time, arrive_time, "False")
+            id = random.randint(1000000,9999999)
+            while 1:
+                sql ="select ino from orderdata where id='%s'" % id
+                db.ping(reconnect=True)
+                cur.execute(sql)
+                if not cur.fetchone():break
+            sql = "insert into orderdata(email, information, shop, submit_time, arrive_time, ino, id) VALUES ('%s','%s','%s','%s','%s','%s','%s')" % (
+                email, information, Ino, submit_time, arrive_time, "False",id)
+            db.ping(reconnect=True)
+            cur.execute(sql)
+            money = float(str(information).split("%")[-1]) - 3
+            sql = "insert into ordermoney(email, shop, submit_time, money_shop, money_horse, id) VALUES ('%s','%s','%s','%s','%s','%s')" % (
+                        email, Ino,  submit_time, str(money),"3",id)
             db.ping(reconnect=True)
             cur.execute(sql)
             db.commit()
@@ -473,55 +492,7 @@ def orderdata(Ino):
         type1 = session.get("type")
         information = request.form.get('result')
         information2 = request.form.get('result2')
-        if not information2:
-            t = information.split("/")
-            try:
-                cur = db.cursor()
-                sql = "select email from userinformation where nickname = '%s'" % t[0]
-                db.ping(reconnect=True)
-                cur.execute(sql)
-                shop_name = str(cur.fetchone())
-                t[0] = str(shop_name).split("'")[1]
-                if type1 == 1:
-                    sql = "select ino from orderdata where email = '%s' and submit_time = '%s'" % (t[0], t[1])
-                elif type1 == 2:
-                    sql = "select ino, email from orderdata where shop = '%s' and submit_time = '%s'" % (t[0], t[1])
-                db.ping(reconnect=True)
-                cur.execute(sql)
-                k = cur.fetchone()
-                p = str(k[0])
-                if len(k) > 1:
-                    o = k[1]
-                if p == "False":
-                    p = "Get"
-                elif p == "Get":
-                    p = "Go"
-                elif p == "Go":
-                    p = "True"
-                if p == "True":
-                    sql = "select information from orderdata where submit_time = '%s' and email='%s'" % (t[1], o)
-                    db.ping(reconnect=True)
-                    cur.execute(sql)
-                    money = float(str(cur.fetchone()[0]).split("%")[-1]) - 3
-                    sql = "insert into ordermoney(email, shop, horseman, submit_time, money_shop, money_horse) VALUES ('%s','%s','%s','%s','%s','%s')" % (
-                        o, t[0], email, t[1], str(money), "3")
-                    db.ping(reconnect=True)
-                    cur.execute(sql)
-                    db.commit()
-                    sql = "update orderdata set ino = '%s', arrive_time='%s' where shop = '%s' and submit_time = '%s'" % (
-                    p, time.strftime("%Y-%m-%d %H:%M:%S"), t[0], t[1])
-                elif p == "Get":
-                    sql = "update orderdata set ino = '%s' where email = '%s' and submit_time = '%s'" % (p, t[0], t[1])
-                else:
-                    sql = "update orderdata set ino = '%s', horseman='%s' where shop = '%s' and submit_time = '%s'" % (
-                    p, email, t[0], t[1])
-                db.ping(reconnect=True)
-                cur.execute(sql)
-                db.commit()
-                cur.close()
-            except Exception as e:
-                raise e
-        else:
+        if information2:
             money = float(request.form.get('text' + information2))
             t = information.split("/")
             try:
@@ -554,16 +525,15 @@ def orderdata(Ino):
             cur = db.cursor()
             sql = ""
             if type1 == 0:
-                sql = "select * from orderdata where email = '%s'" % Ino
+                sql = "select * from orderdata where email = '%s' order by submit_time" % Ino
             elif type1 == 1:
-                sql = "select * from orderdata where shop = '%s'" % Ino
+                sql = "select * from orderdata where shop = '%s' order by submit_time" % Ino
             elif type1 == 2:
-                sql = "select * from orderdata where ino = '%s' or ( (ino ='%s' or ino='%s') and horseman='%s') " % (
+                sql = "select * from orderdata where ino = '%s' or ( (ino ='%s' or ino='%s') and horseman='%s') order by submit_time" % (
                 "Get", "Go", "True", email)
             db.ping(reconnect=True)
             cur.execute(sql)
             order_data = list(cur.fetchall())
-            print(order_data)
             for j in range(len(order_data)):
                 p = list(order_data[j])
                 if type1 == 1: p[2], p[0] = p[0], p[2]
@@ -586,7 +556,6 @@ def orderdata(Ino):
                     money_horse = cur.fetchone()[0]
                     p.append(money_horse)
                 ans.append(tuple(p))
-            print(ans)
             cur.close()
             ans.reverse()
             pager_obj = Pagination(request.args.get("page", 1), len(ans), request.path, request.args, per_page_count=10,
@@ -607,19 +576,29 @@ def issue_detail(Ino):
     if request.method == 'GET':
         try:
             if request.method == 'GET':
+                email = session.get('email')
                 cur = db.cursor()
-                sql = "select Issue.title from Issue where Ino = '%s'" % Ino
+                sql = "select Issue.title from Issue where Ino = '%s' and ban = '0'" % Ino
                 db.ping(reconnect=True)
                 cur.execute(sql)
                 # 这里返回的是一个列表，即使只有一个数据，所以这里使用cur.fetchone()[0]
                 issue_title = cur.fetchone()[0]
-                sql = "select UserInformation.nickname,Comment.comment,Comment.comment_time,Comment.Cno, Comment.email from Comment,UserInformation where Comment.email = UserInformation.email and Ino = '%s'" % Ino
+                sql = "select UserInformation.nickname,Comment.comment,Comment.comment_time,Comment.Cno, Comment.email from Comment,UserInformation where Comment.email = UserInformation.email and Ino = '%s' and Comment.ban = '0'" % Ino
                 db.ping(reconnect=True)
                 cur.execute(sql)
                 comment = cur.fetchall()
+                sql = "select comment from ban where email='%s'" % email
+                db.ping(reconnect=True)
+                cur.execute(sql)
+                ans = cur.fetchone()
+                flag = True
+                if not ans or not ans[0]:
+                    flag = True
+                else:
+                    flag = False
                 cur.close()
                 # 返回视图，同时传递参数
-                return render_template('issue_detail.html', Ino=Ino, issue_title=issue_title, comment=comment)
+                return render_template('issue_detail.html', Ino=Ino, issue_title=issue_title, comment=comment,flag=flag)
         except Exception as e:
             raise e
 
@@ -906,7 +885,7 @@ def show_issue(Ino):
         ans = []
         try:
             cur = db.cursor()
-            sql = "select ino, email, title, issue_time, shop from Issue where shop = '%s' order by issue_time desc" % Ino
+            sql = "select ino, email, title, issue_time, shop from Issue where shop = '%s' and ban = '0' order by issue_time desc" % Ino
             db.ping(reconnect=True)
             cur.execute(sql)
             issue_detail = cur.fetchall()
@@ -930,66 +909,7 @@ def gengenerateFno():
     return re
 
 
-# # 资源上传页面
-# @app.route('/post_file', methods=['GET', 'POST'])
-# @login_limit
-# def post_file():
-#     if request.method == 'GET':
-#         return render_template('post_file.html')
-#     if request.method == 'POST':
-#         email = session.get('email')
-#         upload_file = request.files.get('file')
-#         filename = request.form.get('filename')
-#         file_info = request.form.get('file_info')
-#         file_path = 'store'
-#         file_time = time.strftime("%Y-%m-%d %H:%M:%S")
-#         Fno = gengenerateFno()
-#         try:
-#             cur = db.cursor()
-#             sql = "select * from Files where Fno = '%s'" % Fno
-#             db.ping(reconnect=True)
-#             cur.execute(sql)
-#             result = cur.fetchone()
-#             # 如果result不为空，即该Fno已存在时，一直生成随机的Fno，只到该数据库中不存在
-#             while result is not None:
-#                 Fno = gengenerateFno()
-#                 sql = "select * from Files where Fno = '%s'" % Fno
-#                 db.ping(reconnect=True)
-#                 cur.execute(sql)
-#                 result = cur.fetchone()
-#             # 获取文件的后缀
-#             upload_name = str(upload_file.filename)
-#             houzhui = upload_name.split('.')[-1]
-#             # 保存在本地的名字为生成的Fno+文件后缀，同时修改Fno的值
-#             Fno = Fno + "." + houzhui
-#             # 保存文件到我们的服务器中
-#             upload_file.save(os.path.join(file_path, Fno))
-#             # 将文件信息存储到数据库中
-#             sql = "insert into Files(Fno, filename, file_info, file_time,email) VALUES ('%s','%s','%s','%s','%s')" % (
-#             Fno, filename, file_info, file_time, email)
-#             db.ping(reconnect=True)
-#             cur.execute(sql)
-#             db.commit()
-#             cur.close()
-#             return redirect(url_for('source'))
-#         except Exception as e:
-#             raise e
-#
-#
-# # 资源专区
-# @app.route('/source')
-# def source():
-#     if request.method == 'GET':
-#         try:
-#             cur = db.cursor()
-#             sql = "select Fno,filename,file_info,file_time,nickname from Files,UserInformation where Files.email = UserInformation.email"
-#             db.ping(reconnect=True)
-#             cur.execute(sql)
-#             files = cur.fetchall()
-#             cur.close()
-#             return render_template('source.html', files=files)
-#         except Exception as e:
-#             raise e
+
 
 
 # 点赞
@@ -1116,16 +1036,7 @@ def search_ans(Ino,value):
 
 
 
-# # 在线查看文件
-# @app.route('/online_file/<Fno>')
-# def online_file(Fno):
-#     return send_from_directory(os.path.join('store'), Fno)
-#
-#
-# # 文件下载功能
-# @app.route('/download/<Fno>')
-# def download(Fno):
-#     return send_file(os.path.join('store') + "/" + Fno, as_attachment=True)
+
 
 
 # 富文本编辑器后台配置

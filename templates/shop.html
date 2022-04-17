@@ -75,6 +75,9 @@
                             {% if issue_information[j][4]!= email %}
                             <button type="button" class="btn btn-default" onclick="private_send('{{ issue_information[j][4] }}')" style="float:right">联系商家</button>
                             {% endif %}
+                            <a style="float:right;" href="{{ url_for('personal',Ino = issue_information[j][4]) }}">
+                                    <button type="button" class="btn btn-default">详情</button>
+                            </a>
                             </h1>
                             {% for t in range(tags[j]|length -1, -1, -1) %}
                             <input type="button" style="float:right;" class="btn btn-default" value="{{tags[j][t][0]}}" onclick="search_tags(this)">

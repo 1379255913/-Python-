@@ -10,6 +10,8 @@
 
 {% block content %}
 <h1 class="page-header">评论详情</h1>
+
+<h2>用户邮箱：{{ inf.email }}&nbsp;&nbsp;&nbsp;&nbsp;发布时间：{{ inf.comment_time }}&nbsp;&nbsp;<a href="{{ url_for('admin.right',Ino= inf.email) }}"><input type="button" value="操作" class="btn btn-default"></a></h2>
 <article>
     {{ inf.comment|safe }}
 </article>

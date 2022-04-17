@@ -4,11 +4,12 @@ admin=Blueprint('admin',__name__,url_prefix='/admin',template_folder='templates/
 from databank import *
 from app import db2
 @admin.route('/')
+@admin.route('/user')
 def index():
     if request.method == 'GET':
         str1=UserInformation.query.all()
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -19,7 +20,7 @@ def shopdata():
     if request.method == 'GET':
         str1 = ShopData.query.all()
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -31,7 +32,7 @@ def shoptype():
     if request.method == 'GET':
         str1 = ShopType.query.all()
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -52,7 +53,7 @@ def orderdata():
                 j.nickname_horseman = str2.nickname
             else:j.nickname_horseman=""
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -73,7 +74,7 @@ def ordermoney():
                 j.nickname_horseman = str2.nickname
             else:j.nickname_horseman=""
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -90,7 +91,7 @@ def likes():
             str2 = UserInformation.query.filter_by(email=j.shop_email).first()
             j.nickname_shop = str2.nickname
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -107,7 +108,7 @@ def fav():
             str2 = UserInformation.query.filter_by(email=j.shop_email).first()
             j.nickname_shop = str2.nickname
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -124,7 +125,7 @@ def follow():
             str2 = UserInformation.query.filter_by(email=j.follow_email).first()
             j.nickname_followed = str2.nickname
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -141,7 +142,7 @@ def issue():
             str2 = UserInformation.query.filter_by(email=j.shop).first()
             j.nickname_shop = str2.nickname
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -161,7 +162,7 @@ def comment():
             str2 = UserInformation.query.filter_by(email=j.email).first()
             j.nickname_user = str2.nickname
         pager_obj = Pagination(request.args.get("page", 1), len(str1), request.path, request.args,
-                               per_page_count=10,
+                               per_page_count=20,
                                max_pager_count=11)
         index_list = str1[pager_obj.start:pager_obj.end]
         html = pager_obj.page_html()
@@ -173,3 +174,35 @@ def comment_detail():
         id=request.form.get("id")
         str1 = Comment.query.filter_by(id=id).first()
         return render_template('admin_comment_detail.html',inf=str1)
+
+
+# 权限操作
+@admin.route('/right/<Ino>', methods=['GET'])
+def right(Ino):
+    if request.method == 'GET':
+        inf = db2.session.query(Ban).filter(Ban.email == Ino).first()
+        inf2 = db2.session.query(UserInformation).filter(UserInformation.email == Ino).first()
+        return render_template('admin_right.html', inf=inf ,inf2=inf2)
+
+
+# 禁言
+@admin.route('/ban_api', methods=['POST'])
+def ban_api():
+    email = request.form.get('email')
+    value = request.form.get('value')
+    flag = 'True'
+
+    inf = db2.session.query(Ban).filter(Ban.email == email).first()
+    if not inf:
+        inf2=""
+        if value=='comment':
+            inf2 = Ban(email=email,comment=True)
+        db2.session.add(inf2)
+    else:
+        if inf.comment:
+            inf.comment=""
+            flag = 'False'
+        else:
+            inf.comment="True"
+    db2.session.commit()
+    return  flag

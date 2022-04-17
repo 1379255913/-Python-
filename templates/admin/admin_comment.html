@@ -53,7 +53,7 @@ function postissue(obj){
                             <tr>
                                 <td >{{ i.Ino2 }}...<a href="{{ url_for('admin.ans', Ino=i.Ino) }}">点击查看完整</a></td>
                                 <td>{{ i.Cno }}</td>
-                                <td id="{{ i.id }}" onclick="postissue(this)" style="text-decoration:underline; color:blue; cursor:pointer;" >查看</td>
+                                <td id="{{ i.id }}" onclick="postissue(this)" style="text-decoration:underline; color:#0000ff; cursor:pointer;">查看</td>
                                 <td>{{ i.comment_time }}</td>
                                 <td>{{ i.nickname_user }}</td>
                             </tr>
@@ -67,6 +67,6 @@ function postissue(obj){
                 </nav>
                 </div>
 {% endblock %}
-{% block comment_class %}
+{% block all_comment_class %}
 active
 {% endblock %}

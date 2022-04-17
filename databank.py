@@ -81,6 +81,7 @@ class UserInformation(db.Model):
     children1 = db.relationship("ShopData", backref="userinformation")
     children2 = db.relationship("ShopType", backref="userinformation")
     children3 = db.relationship("Messages", backref="userinformation")
+    children4 = db.relationship("Ban", backref="userinformation")
     def __repr__(self):
         return "Role: %s %s %s %s %s %s %s %s %s %s" % (
         self.email, self.nickname, self.password, self.type, self.create_time, self.phone, self.address,
@@ -199,9 +200,10 @@ class Issue(db.Model):
     title = db.Column(db.Text)
     issue_time = db.Column(db.DateTime)
     shop = db.Column(db.String(255))
+    ban = db.Column(db.Integer)
     def __repr__(self):
-        return "Role: %s %s %s %s %s" % (
-        self.Ino, self.email, self.title, self.issue_time,self.shop)
+        return "Role: %s %s %s %s %s %s" % (
+        self.Ino, self.email, self.title, self.issue_time,self.shop,self.ban)
 
 class Comment(db.Model):
     __tablename__ = "comment"
@@ -213,9 +215,21 @@ class Comment(db.Model):
     email = db.Column(db.String(128))
     shop = db.Column(db.String(255))
     id = db.Column(db.Integer, primary_key=True)
+    ban = db.Column(db.Integer)
     def __repr__(self):
-        return "Role: %s %s %s %s %s %s %s" % (
-        self.Cno, self.Ino, self.comment, self.comment_time,self.email,self.shop,self.id)
+        return "Role: %s %s %s %s %s %s %s %s" % (
+        self.Cno, self.Ino, self.comment, self.comment_time,self.email,self.shop,self.id,self.ban)
+
+
+
+class Ban(db.Model):
+    __tablename__= "ban"
+    email = db.Column(db.String(255),db.ForeignKey('userinformation.email'))
+    comment = db.Column(db.String(20))
+    id = db.Column(db.Integer, primary_key=True)
+    def __repr__(self):
+        return "Role: %s %s %s" % (self.email,self.comment,self.id)
+
 
 
 # class User(db.Model):

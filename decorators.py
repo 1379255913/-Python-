@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import session, url_for, redirect
-
-
+from databank import Ban
+from app import db2
 # 登录限制的装饰器 用于某些只让登录用户查看的网页
 def login_limit(func):
     @wraps(func)
@@ -13,5 +13,19 @@ def login_limit(func):
         else:
             # 如果没登录，我们就将它重定向到登录页面，这里大家也可以写一个权限错误的提示页面进行跳转
             return redirect(url_for('login'))
+
+    return wrapper
+
+
+def ban_comment(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t=session.get('email')
+        inf = db2.session.query(Ban).filter(Ban.email == t).first()
+        if not inf or not inf.comment:
+            return func(*args, **kwargs)
+        else:
+            # 如果没登录，我们就将它重定向到登录页面，这里大家也可以写一个权限错误的提示页面进行跳转
+            return redirect(url_for('forbid'))
 
     return wrapper

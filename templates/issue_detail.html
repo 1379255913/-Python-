@@ -41,6 +41,8 @@
                 </li>
             {% endfor %}
                 <li>
+
+            {% if flag %}
                     <div>
                         <form class="post_issue_form" method="post">
                             <input type="hidden" name="Ino" value="{{ Ino }}">
@@ -54,7 +56,9 @@
                             </div>
                         </form>
                     </div>
+                     {% endif %}
                 </li>
+
         </ul>
     </div>
 <!-- 实例化编辑器 -->

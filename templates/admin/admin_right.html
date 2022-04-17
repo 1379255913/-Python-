@@ -1,0 +1,91 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}
+用户信息
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+<h1 class="page-header">用户信息</h1>
+<div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>电子邮箱</th>
+                                <th>昵称/名称</th>
+                                <th>类型</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td>{{ inf2.email }}</td>
+                                <td>{{ inf2.nickname }}</td>
+                                {% if inf2.type==0 %}
+                                <td>用户</td>
+                                {% elif inf2.type==1 %}
+                                <td>商家</td>
+                                {% elif inf2.type==2 %}
+                                <td>骑手</td>
+                                {% elif inf2.type==3 %}
+                                <td>管理员</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if not inf or not inf.comment %}
+                                    <input type="button" class="btn btn-default" id="button_{{ inf2.email }}" onclick="ban_comment(this)" name="{{ inf2.email }}" value="禁言">
+                                    {% else %}
+                                    <input type="button" class="btn btn-default" id="button_{{ inf2.email }}" onclick="ban_comment(this)" name="{{ inf2.email }}" value="取消禁言">
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <nav aria-label="Page navigation" class="pull-right">
+                    <ul class="pagination">
+                        {{ html|safe }}
+                    </ul>
+                </nav>
+                </div>
+<script>
+    function ban_comment(obj) {
+        var email = obj.name
+        var value = 'comment'
+        var id = obj.id
+        var ans = obj.value
+        $.ajax({
+                   url : "/admin/ban_api",
+                   type : "POST",
+                   data : {
+                       email : email,
+                       value : value,
+                   },
+                   success : function(result) {
+                       location.reload();
+                       console.log(result);
+                       if (result)
+                       {
+                           console.log("success");
+                           if (ans==="禁言"){
+                               document.getElementById(id).value='取消禁言';
+                           } else {
+                               document.getElementById(id).value='禁言';
+                           }
+
+
+                       }
+                   },
+                   error:function(msg){
+                     console.log("error:",msg)
+                   }
+                 })
+    }
+</script>
+{% endblock %}
+{% block user_class %}
+active
+{% endblock %}

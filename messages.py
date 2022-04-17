@@ -1,5 +1,4 @@
 import hashlib
-
 from flask import Flask, session, request, redirect, url_for, render_template, flash, Blueprint
 from databank import Messages,UserInformation,Follow
 from app import db2, socketio

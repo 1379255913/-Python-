@@ -107,8 +107,29 @@
             k=null;
         }
         function change(obj) {
-            document.getElementById("result").value=obj.name;
-            document.getElementById("form1").submit()
+            var ans = obj.name;
+            var ans2 = ans.split("/")
+            $.ajax({
+                   url : "/order_api/change_orderdata",
+                   type : "POST",
+                   data : {
+                       id : ans2[0],
+                       ino : ans2[1],
+                       email : "{{ email|safe }}",
+                   },
+                   success : function(result) {
+                       location.reload();
+                       console.log(result);
+                       if (result)
+                       {
+                           console.log("success")
+
+                       }
+                   },
+                   error:function(msg){
+                     console.log("error:",msg)
+                   }
+                 })
         }
         function change2(obj) {
             var r = confirm("你确定要打赏吗？");
@@ -129,19 +150,19 @@
                     {% if type==1 and issue[5]=='False' %}
                     <div style = "float:right;" id="divdiv">
                     <script type="text/javascript">
-                    addInput("{{ issue[2] }}","{{ issue[3] }}","接单");
+                    addInput("{{ issue[7] }}","{{ issue[5] }}","接单");
                     </script>
                     </div>
                     {% elif type==2 and issue[5]=='Get' %}
                     <div style = "float:right;" id="divdiv">
                     <script type="text/javascript">
-                    addInput("{{ issue[2] }}","{{ issue[3] }}","接单");
+                    addInput("{{ issue[7] }}","{{ issue[5] }}","接单");
                     </script>
                     </div>
                     {% elif type==2 and issue[5]=='Go' %}
                     <div style = "float:right;" id="divdiv">
                     <script type="text/javascript">
-                    addInput("{{ issue[2] }}","{{ issue[3] }}","确认送达");
+                    addInput("{{ issue[7] }}","{{ issue[5] }}","确认送达");
                     </script>
                     </div>
                     {% elif type==0 and issue[5]=='True' %}

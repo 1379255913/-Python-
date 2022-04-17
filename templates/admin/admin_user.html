@@ -22,6 +22,7 @@
                                 <th>地址</th>
                                 <th>介绍</th>
                                 <th>照片</th>
+                                <th>权限</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -43,6 +44,7 @@
                                 <td>{{ i.address }}</td>
                                 <td>{{ i.information }}</td>
                                 <td><a href="{{ i.photo }}">查看</a></td>
+                                <td><a href="{{ url_for('admin.right',Ino= i.email) }}"><input type="button" value="操作" class="btn btn-default"></a></td>
                             </tr>
                         {% endfor %}
                         </tbody>

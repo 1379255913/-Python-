@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}
+禁止访问
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/personal.css">
+<link rel="stylesheet" href="/static/css/register.css">
+{% endblock %}
+
+{% block content %}
+<div class="personal_content">
+    <div class="page-header" id="page_header">
+      <h1 style="font-size: 80px;color: red;">您已被禁止访问</h1>
+    </div>
+    <script>
+        setTimeout(() => top.location='/', 5000);
+
+    </script>
+</div>
+{% endblock %}
