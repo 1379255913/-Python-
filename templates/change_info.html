@@ -99,9 +99,15 @@
             {% endif %}
             <input type="hidden" id="tags2" name="tags">
             <br/>
+            {% if type == 1 %}
             <div id="info_butt">
               <button type="button" class="btn btn-default" onclick="to_submit()">修改信息</button>
-          </div>
+            </div>
+            {% else %}
+            <div id="info_butt">
+              <button type="submit" class="btn btn-default">修改信息</button>
+            </div>
+            {% endif %}
         </form>
     </div>
 </div>

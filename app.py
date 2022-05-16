@@ -165,11 +165,11 @@ def email_confirm():
         confirm = request.form.get('confirm')
         password = request.form.get('new_password')
         id=request.form.get('getid')
-        if not all([email, password,confirm]):
+        if not all([email, password,confirm,id]):
             flash("请将信息填写完整！")
             return render_template('email_confirm.html')
         inf = Confirm.query.filter_by(id=id).first()
-        if not confirm==inf.secret:
+        if not inf or not confirm==inf.secret:
             flash("验证码错误！")
             return render_template('email_confirm.html')
         cur = db.cursor()
@@ -378,7 +378,7 @@ def shop_detail(Ino):
     if request.method == 'POST':
         result = request.form.get("result")
         cur = db.cursor()
-        sql = "delete from shopdata where title = '%s'" % str(result)
+        sql = "delete from shopdata where id = '%s'" % result
         db.ping(reconnect=True)
         cur.execute(sql)
         db.commit()
@@ -394,7 +394,7 @@ def shop_detail(Ino):
         db.ping(reconnect=True)
         cur.execute(sql)
         shop_type = cur.fetchone()
-        sql = "select title, price, information, photo, type, movie from shopdata where email = '%s' order by type" % Ino
+        sql = "select title, price, information, photo, type, movie, id from shopdata where email = '%s' order by type" % Ino
         db.ping(reconnect=True)
         cur.execute(sql)
         issue_information = cur.fetchall()
@@ -733,6 +733,9 @@ def change_info():
         email = session.get('email')
         try:
             cur = db.cursor()
+            if new_photo and not allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
+                flash("上传照片格式错误！")
+                return redirect(url_for('change_info'))
             if new_photo and allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
                 path = "/static/img/"
                 file_path = path + create_uuid() + '.jpg'
@@ -794,7 +797,7 @@ def create_food():
         if not allowed_file(new_photo.filename) in ALLOWED_EXTENSIONS:
             flash("上传照片格式错误！")
             return redirect(url_for('create_food'))
-        if new_movie.filename and not allowed_file(new_movie.filename) in ALLOWED_EXTENSIONS2:
+        if new_movie and not allowed_file(new_movie.filename) in ALLOWED_EXTENSIONS2:
             flash("上传视频格式错误！")
             return redirect(url_for('create_food'))
         try:
@@ -1015,6 +1018,7 @@ def search_ans(Ino,value):
             sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email, userinformation.num from userinformation,shopdata where  shopdata.title like '%%%s%%' and shopdata.email=userinformation.email" % Ino
         elif str(value)=="2":
             sql = "select DISTINCT userinformation.nickname, userinformation.address, userinformation.information, userinformation.photo, userinformation.email, userinformation.num from userinformation,shoptags where  shoptags.tag = '%s' and shoptags.email=userinformation.email" % Ino
+        else:return redirect(url_for('index'))
         db.ping(reconnect=True)
         cur.execute(sql)
         issue_information = list(cur.fetchall())
